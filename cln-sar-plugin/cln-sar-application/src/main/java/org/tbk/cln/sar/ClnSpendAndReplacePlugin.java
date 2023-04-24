@@ -1,5 +1,6 @@
 package org.tbk.cln.sar;
 
+import com.google.gson.JsonObject;
 import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
 import jrpc.clightning.annotation.Subscription;
@@ -9,12 +10,24 @@ import jrpc.clightning.plugins.log.PluginLog;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.knowm.xchange.Exchange;
+import org.knowm.xchange.currency.Currency;
+import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.marketdata.Ticker;
+import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 @RequiredArgsConstructor
 public class ClnSpendAndReplacePlugin extends CLightningPlugin {
 
     @NonNull
     private final ApplicationShutdownManager shutdownManager;
+
+    @NonNull
+    private final Exchange exchange;
 
     @PluginOption(
             name = "sar-dry-run",
@@ -69,6 +82,50 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             }
         } catch (Exception e) {
             // empty on purpose
+        }
+    }
+
+    @RPCMethod(
+            name = "sar-ticker",
+            description = "Say hello from the spend-and-replace plugin",
+            parameter = "[fiat-currency]"
+
+    )
+    public void rpcTicker(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc ticker invoked: " + request.getWrapper());
+
+        Currency bitcoinCurrency = Currency.BTC;
+
+        Currency fiatCurrency = Currency.getInstance("USD");
+        CurrencyPair currencyPair = new CurrencyPair(bitcoinCurrency, fiatCurrency);
+
+        boolean supportedCurrencyPair = exchange.getExchangeInstruments().contains(currencyPair);
+        if (!supportedCurrencyPair) {
+            throw new IllegalStateException("Currency pair is not supported: " + currencyPair);
+        }
+
+        try {
+            CurrencyPairsParam currencyPairsParam = () -> Collections.singletonList(currencyPair);
+            List<Ticker> tickers = exchange.getMarketDataService().getTickers(currencyPairsParam).stream()
+                    .filter(it -> currencyPair.equals(it.getInstrument()))
+                    .toList();
+
+            JsonObject result = new JsonObject();
+            tickers.forEach(ticker -> {
+                JsonObject data = new JsonObject();
+                data.addProperty("ask", ticker.getAsk().toPlainString());
+                data.addProperty("bid", ticker.getAsk().toPlainString());
+                data.addProperty("high", ticker.getHigh().toPlainString());
+                data.addProperty("low", ticker.getLow().toPlainString());
+                data.addProperty("open", ticker.getOpen().toPlainString());
+                data.addProperty("last", ticker.getLast().toPlainString());
+
+                result.add(ticker.getInstrument().toString(), data);
+            });
+
+            response.add("result", result);
+        } catch (IOException e) {
+            response.add("error", e.getMessage());
         }
     }
 }

@@ -10,6 +10,12 @@ dependencies {
 
     implementation project(':cln-sar-plugin:cln-sar-starter')
 
+    implementation "io.github.theborakompanioni:bitcoin-jsr354-starter:${bitcoinSpringBootStarterVersion}"
+    implementation "io.github.theborakompanioni:spring-jsr354-starter:${bitcoinSpringBootStarterVersion}"
+    implementation "io.github.theborakompanioni:xchange-jsr354-starter:${bitcoinSpringBootStarterVersion}"
+    implementation "io.github.theborakompanioni:spring-xchange-starter:${bitcoinSpringBootStarterVersion}"
+
+
     implementation 'org.springframework.boot:spring-boot-starter'
     //implementation 'org.springframework.boot:spring-boot-starter-web'
     //implementation 'org.springframework.boot:spring-boot-starter-validation'
