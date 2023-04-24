@@ -1,5 +1,6 @@
 package org.tbk.cln.sar;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import jrpc.clightning.annotation.PluginOption;
 import jrpc.clightning.annotation.RPCMethod;
@@ -19,9 +20,12 @@ import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class ClnSpendAndReplacePlugin extends CLightningPlugin {
+
+    private static final String DEFAULT_FIAT_CURRENCY = "USD";
 
     @NonNull
     private final ApplicationShutdownManager shutdownManager;
@@ -59,35 +63,9 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
         response.addProperty("dry-run", dryRun);
     }
 
-    @Subscription(notification = "shutdown")
-    public void shutdown(CLightningJsonObject data) {
-        System.exit(shutdownManager.initiateShutdown(0));
-    }
-
-    // https://lightning.readthedocs.io/PLUGINS.html?#sendpay-success
-    @Subscription(notification = "sendpay_success")
-    public void onNotificationSendpaySuccess(CLightningJsonObject data) {
-        log(PluginLog.DEBUG, "Notification sendpay_success received.");
-
-        try {
-            long amountWithFees = data.getAsJsonObject("sendpay_success")
-                    .getAsJsonPrimitive("amount_sent_msat")
-                    .getAsLong();
-            log(PluginLog.DEBUG, "Spent amount which needs to be replaced: " + amountWithFees);
-
-            if (dryRun) {
-                log(PluginLog.INFO, "Dry run is active; would have replaced: " + amountWithFees);
-            } else {
-                log(PluginLog.ERROR, "Error while replacing amount: Not implemented yet");
-            }
-        } catch (Exception e) {
-            // empty on purpose
-        }
-    }
-
     @RPCMethod(
             name = "sar-ticker",
-            description = "Say hello from the spend-and-replace plugin",
+            description = "Get the ticker representing the current exchange rate for the provided currency.",
             parameter = "[fiat-currency]"
 
     )
@@ -95,13 +73,20 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
         log(PluginLog.DEBUG, "rpc ticker invoked: " + request.getWrapper());
 
         Currency bitcoinCurrency = Currency.BTC;
+        String fiatCurrenyParam = Optional.ofNullable(request.getAsJsonArray("params"))
+                .filter(JsonElement::isJsonArray)
+                .filter(it -> !it.isEmpty())
+                .map(it -> it.get(0))
+                .map(it -> it.getAsJsonPrimitive().getAsString())
+                .orElse(DEFAULT_FIAT_CURRENCY);
 
-        Currency fiatCurrency = Currency.getInstance("USD");
+        Currency fiatCurrency = Currency.getInstance(fiatCurrenyParam);
         CurrencyPair currencyPair = new CurrencyPair(bitcoinCurrency, fiatCurrency);
 
         boolean supportedCurrencyPair = exchange.getExchangeInstruments().contains(currencyPair);
         if (!supportedCurrencyPair) {
-            throw new IllegalStateException("Currency pair is not supported: " + currencyPair);
+            response.add("error", "Currency pair is not supported: " + currencyPair);
+            return;
         }
 
         try {
@@ -126,6 +111,32 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             response.add("result", result);
         } catch (IOException e) {
             response.add("error", e.getMessage());
+        }
+    }
+
+    @Subscription(notification = "shutdown")
+    public void shutdown(CLightningJsonObject data) {
+        System.exit(shutdownManager.initiateShutdown(0));
+    }
+
+    // https://lightning.readthedocs.io/PLUGINS.html?#sendpay-success
+    @Subscription(notification = "sendpay_success")
+    public void onNotificationSendpaySuccess(CLightningJsonObject data) {
+        log(PluginLog.DEBUG, "Notification sendpay_success received.");
+
+        try {
+            long amountWithFees = data.getAsJsonObject("sendpay_success")
+                    .getAsJsonPrimitive("amount_sent_msat")
+                    .getAsLong();
+            log(PluginLog.DEBUG, "Spent amount which needs to be replaced: " + amountWithFees);
+
+            if (dryRun) {
+                log(PluginLog.INFO, "Dry run is active; would have replaced: " + amountWithFees);
+            } else {
+                log(PluginLog.ERROR, "Error while replacing amount: Not implemented yet");
+            }
+        } catch (Exception e) {
+            // empty on purpose
         }
     }
 }
