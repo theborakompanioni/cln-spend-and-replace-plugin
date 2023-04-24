@@ -50,4 +50,25 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     public void shutdown(CLightningJsonObject data) {
         System.exit(shutdownManager.initiateShutdown(0));
     }
+
+    // https://lightning.readthedocs.io/PLUGINS.html?#sendpay-success
+    @Subscription(notification = "sendpay_success")
+    public void onNotificationSendpaySuccess(CLightningJsonObject data) {
+        log(PluginLog.DEBUG, "Notification sendpay_success received.");
+
+        try {
+            long amountWithFees = data.getAsJsonObject("sendpay_success")
+                    .getAsJsonPrimitive("amount_sent_msat")
+                    .getAsLong();
+            log(PluginLog.DEBUG, "Spent amount which needs to be replaced: " + amountWithFees);
+
+            if (dryRun) {
+                log(PluginLog.INFO, "Dry run is active; would have replaced: " + amountWithFees);
+            } else {
+                log(PluginLog.ERROR, "Error while replacing amount: Not implemented yet");
+            }
+        } catch (Exception e) {
+            // empty on purpose
+        }
+    }
 }
