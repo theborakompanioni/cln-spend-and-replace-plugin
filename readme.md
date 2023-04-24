@@ -13,7 +13,7 @@ cln-spend-and-replace-plugin
 
 ## RPC commands
 
-### sar-listconfigs
+### `sar-listconfigs`
 Command to list all configuration options.
 
 ```shell
@@ -23,7 +23,7 @@ user@host:~$ lightning-cli sar-listconfigs
 }
 ```
 
-### sar-ticker
+### `sar-ticker`
 Get the ticker representing the current exchange rate for the provided currency.
 
 ```shell
@@ -55,6 +55,16 @@ user@host:~$ lightning-cli sar-ticker GBP
          "last": "21901.50000"
       }
    }
+}
+```
+
+### `sar-version`
+Command to print the plugin version.
+
+```shell
+user@host:~$ lightning-cli sar-version
+{
+   "version": "0.1.0-dev.4.uncommitted+7f363fa"
 }
 ```
 

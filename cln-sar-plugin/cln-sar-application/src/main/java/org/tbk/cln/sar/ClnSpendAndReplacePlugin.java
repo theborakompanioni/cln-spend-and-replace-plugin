@@ -64,6 +64,16 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     }
 
     @RPCMethod(
+            name = "sar-version",
+            description = "Command to print the plugin version."
+    )
+    public void rpcVersion(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc version invoked: " + request.getWrapper());
+
+        response.add("version", this.getClass().getPackage().getImplementationVersion());
+    }
+
+    @RPCMethod(
             name = "sar-ticker",
             description = "Get the ticker representing the current exchange rate for the provided currency.",
             parameter = "[fiat-currency]"
