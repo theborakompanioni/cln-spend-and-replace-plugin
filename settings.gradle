@@ -1,0 +1,7 @@
+rootProject.name = 'cln-spend-and-replace-plugin'
+
+include 'cln-sar-plugin:cln-sar-core'
+include 'cln-sar-plugin:cln-sar-autoconfigure'
+include 'cln-sar-plugin:cln-sar-starter'
+include 'cln-sar-plugin:cln-sar-application'
+

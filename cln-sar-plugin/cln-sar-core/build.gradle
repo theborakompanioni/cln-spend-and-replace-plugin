@@ -1,0 +1,9 @@
+plugins {
+    id 'java'
+}
+
+description = 'cln-spend-and-replace-plugin core package'
+
+dependencies {
+    api "io.projectreactor:reactor-core"
+}
