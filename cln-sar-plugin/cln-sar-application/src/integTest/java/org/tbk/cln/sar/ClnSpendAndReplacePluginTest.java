@@ -116,10 +116,12 @@ class ClnSpendAndReplacePluginTest {
 
         JsonNode result = mapper.readTree(output).get("result");
         assertThat(result.isObject(), is(true));
-        assertThat(result.size(), is(2)); // adapt if you add new values
+        assertThat(result.size(), is(3)); // adapt if you add new values
 
         assertThat(result.get("dry-run").asText("-"), is("false"));
-        assertThat(result.get("default-fiat-currency").asText("-"), is("USD"));
+        assertThat(result.get("fiat-currency").get("default").asText("-"), is("USD"));
+        assertThat(result.get("exchange").get("name").asText("-"), is("Dummy"));
+        assertThat(result.get("exchange").get("host").asText("-"), is("www.example.com"));
     }
 
     @Test

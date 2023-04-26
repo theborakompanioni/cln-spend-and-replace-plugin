@@ -67,7 +67,15 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     )
     public void rpcListconfigs(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         response.addProperty("dry-run", dryRun);
-        response.addProperty("default-fiat-currency", defaultFiatCurrency);
+
+        JsonObject fiatCurrencyData = new JsonObject();
+        fiatCurrencyData.addProperty("default", defaultFiatCurrency);
+        response.add("fiat-currency", fiatCurrencyData);
+
+        JsonObject exchangeData = new JsonObject();
+        exchangeData.addProperty("name", exchange.getExchangeSpecification().getExchangeName());
+        exchangeData.addProperty("host", exchange.getExchangeSpecification().getHost());
+        response.add("exchange", exchangeData);
     }
 
     @RPCMethod(

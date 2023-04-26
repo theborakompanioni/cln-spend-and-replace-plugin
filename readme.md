@@ -19,7 +19,14 @@ Command to list all configuration options.
 ```shell
 user@host:~$ lightning-cli sar-listconfigs
 {
-   "dry-run": false
+   "dry-run": false,
+   "fiat-currency": {
+      "default": "USD"
+   },
+   "exchange": {
+      "name": "Kraken",
+      "host": "api.kraken.com"
+   }
 }
 ```
 
