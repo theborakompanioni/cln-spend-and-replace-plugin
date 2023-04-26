@@ -102,6 +102,8 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
         Currency fiatCurrency = Currency.getInstance(fiatCurrenyParam);
         CurrencyPair currencyPair = new CurrencyPair(bitcoinCurrency, fiatCurrency);
 
+        initExchangeIfNecessary();
+
         boolean supportedCurrencyPair = exchange.getExchangeInstruments().contains(currencyPair);
         if (!supportedCurrencyPair) {
             response.add("error", "Currency pair is not supported: " + currencyPair);
@@ -156,6 +158,17 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             }
         } catch (Exception e) {
             // empty on purpose
+        }
+    }
+
+    private void initExchangeIfNecessary() {
+        try {
+            boolean needsInit = exchange.getExchangeMetaData() == null || exchange.getExchangeMetaData().getInstruments() == null;
+            if (needsInit) {
+                exchange.remoteInit();
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Could not initialize exchange", e);
         }
     }
 }
