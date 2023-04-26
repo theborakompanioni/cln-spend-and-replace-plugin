@@ -2,9 +2,9 @@ package org.tbk.cln.sar;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
@@ -12,6 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Arrays;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -46,6 +47,11 @@ class ClnSpendAndReplacePluginTest {
         inCaptor.close();
     }
 
+    @BeforeEach
+    public void setUp() {
+        outCaptor.reset();
+    }
+
     @Test
     void testGetManifest() throws IOException {
         inWriter.write("""
@@ -72,12 +78,12 @@ class ClnSpendAndReplacePluginTest {
         assertThat(manifest.get("hooks").isArray(), is(true));
     }
 
-    /*@Test
-    void testSnrVersion() throws IOException {
+    @Test
+    void testSarVersion() throws IOException {
         inWriter.write("""
                 {
                     "jsonrpc": "2.0",
-                    "id": 1,
+                    "id": 2,
                     "method": "sar-version",
                     "params": {}
                 }\n
@@ -87,11 +93,22 @@ class ClnSpendAndReplacePluginTest {
                 .atMost(Duration.ofSeconds(5))
                 .until(() -> outCaptor.size() > 0);
 
-        String output = outCaptor.toString(StandardCharsets.UTF_8);
-        assertThat(output, is(notNullValue()));
+        String output = asStringWithoutLogMessages(outCaptor);
 
-        // TODO: result is a log output, capture the actual response of the method invocation
-        JsonNode result = mapper.readTree(output);
+        JsonNode result = mapper.readTree(output).get("result");
         assertThat(result.isObject(), is(true));
-    }*/
+        assertThat(result.get("version").asText("-"), is("local"));
+    }
+
+    private static String asStringWithoutLogMessages(ByteArrayOutputStream baos) {
+        String rawOutput = baos.toString(StandardCharsets.UTF_8);
+        if (!rawOutput.contains("}{")) {
+            return rawOutput;
+        }
+
+        return Arrays.stream(rawOutput.replace("}{", "}}{{").split("}\\{"))
+                .filter(it -> !it.contains("\"method\":\"log\""))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No result found on stdout"));
+    }
 }

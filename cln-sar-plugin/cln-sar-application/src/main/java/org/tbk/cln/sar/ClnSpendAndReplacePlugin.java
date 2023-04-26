@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 public class ClnSpendAndReplacePlugin extends CLightningPlugin {
@@ -71,7 +70,9 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     public void rpcVersion(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         log(PluginLog.DEBUG, "rpc version invoked: " + request.getWrapper());
 
-        response.add("version", this.getClass().getPackage().getImplementationVersion());
+        response.add("version", Optional.of(this)
+                .map(it -> it.getClass().getPackage().getImplementationVersion())
+                .orElse("local"));
     }
 
     @RPCMethod(
