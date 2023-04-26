@@ -111,7 +111,7 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             tickers.forEach(ticker -> {
                 JsonObject data = new JsonObject();
                 data.addProperty("ask", ticker.getAsk().toPlainString());
-                data.addProperty("bid", ticker.getAsk().toPlainString());
+                data.addProperty("bid", ticker.getBid().toPlainString());
                 data.addProperty("high", ticker.getHigh().toPlainString());
                 data.addProperty("low", ticker.getLow().toPlainString());
                 data.addProperty("open", ticker.getOpen().toPlainString());

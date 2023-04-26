@@ -20,7 +20,7 @@ logging.level.web: DEBUG
 
 org.tbk.xchange:
   specifications:
-    krakenExchange:
+    pluginExchange:
       exchange-class: org.knowm.xchange.kraken.KrakenExchange
       exchange-specific-parameters:
         Use_Sandbox: true

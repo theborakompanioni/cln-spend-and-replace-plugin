@@ -23,6 +23,6 @@ logging.level.org.springframework.web.servlet.mvc.method.annotation.RequestMappi
 org.tbk.xchange:
   enabled: true
   specifications:
-    krakenExchange:
+    pluginExchange:
       exchange-class: org.knowm.xchange.kraken.KrakenExchange
       should-load-remote-meta-data: false

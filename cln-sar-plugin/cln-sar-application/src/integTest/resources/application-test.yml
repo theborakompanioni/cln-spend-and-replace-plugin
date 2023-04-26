@@ -9,3 +9,10 @@ server.use-forward-headers: true
 server.compression.enabled: true
 
 management.server.port: 9001
+
+org.tbk.xchange:
+  enabled: true
+  specifications:
+    pluginExchange:
+      exchange-class: org.tbk.cln.sar.test.DummyExchange
+      #exchange-class: org.knowm.xchange.kraken.KrakenExchange

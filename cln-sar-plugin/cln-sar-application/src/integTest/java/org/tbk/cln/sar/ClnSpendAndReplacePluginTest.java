@@ -59,7 +59,7 @@ class ClnSpendAndReplacePluginTest {
                     "jsonrpc": "2.0",
                     "id": 1,
                     "method": "getmanifest",
-                    "params": {}
+                    "params": []
                 }\n
                 """.getBytes(StandardCharsets.UTF_8));
 
@@ -85,7 +85,7 @@ class ClnSpendAndReplacePluginTest {
                     "jsonrpc": "2.0",
                     "id": 2,
                     "method": "sar-version",
-                    "params": {}
+                    "params": []
                 }\n
                 """.getBytes(StandardCharsets.UTF_8));
 
@@ -98,6 +98,38 @@ class ClnSpendAndReplacePluginTest {
         JsonNode result = mapper.readTree(output).get("result");
         assertThat(result.isObject(), is(true));
         assertThat(result.get("version").asText("-"), is("local"));
+    }
+
+    @Test
+    void testSarTicker() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": 2,
+                    "method": "sar-ticker",
+                    "params": []
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(50))
+                .until(() -> outCaptor.size() > 0);
+
+        String output = asStringWithoutLogMessages(outCaptor);
+
+        JsonNode result = mapper.readTree(output).get("result");
+        assertThat(result.isObject(), is(true));
+
+        JsonNode tickerResult = result.get("result");
+        assertThat(tickerResult.hasNonNull("BTC/USD"), is(true));
+
+        JsonNode btcUsdTicker = tickerResult.get("BTC/USD");
+        assertThat(btcUsdTicker.get("ask").asText("-"), is("0.12"));
+        assertThat(btcUsdTicker.get("bid").asText("-"), is("0.14"));
+        assertThat(btcUsdTicker.get("high").asText("-"), is("0.15"));
+        assertThat(btcUsdTicker.get("low").asText("-"), is("0.17"));
+        assertThat(btcUsdTicker.get("open").asText("-"), is("0.18"));
+        assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
     }
 
     private static String asStringWithoutLogMessages(ByteArrayOutputStream baos) {
