@@ -6,7 +6,7 @@ RUN apt-get update -y \
   && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/
 
 COPY --chmod=0755 cln-sar-plugin/cln-sar-application/build/libs/*-boot.jar /opt/spend-and-replace/bin/
-RUN cp /opt/spend-and-replace/bin/*-boot.jar /usr/local/libexec/c-lightning/plugins/spend-and-replace \
+RUN ln -s /opt/spend-and-replace/bin/*-boot.jar /usr/local/libexec/c-lightning/plugins/spend-and-replace \
   && echo "plugin=/usr/local/libexec/c-lightning/plugins/spend-and-replace" > /root/.lightning/config
 
 ENTRYPOINT ["/entrypoint.sh"]
