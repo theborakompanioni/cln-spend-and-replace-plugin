@@ -78,17 +78,23 @@ class ClnSpendAndReplacePluginTest {
         assertThat(manifest.get("subscriptions").isArray(), is(true));
         assertThat(manifest.get("hooks").isArray(), is(true));
 
-        List<String> subscriptions = StreamSupport.stream(manifest.get("subscriptions").spliterator(), false)
-                .map(it -> it.asText("-"))
+        List<String> optionNames = StreamSupport.stream(manifest.get("options").spliterator(), false)
+                .map(it -> it.get("name").asText("-"))
                 .toList();
 
-        assertThat(subscriptions, hasItems("shutdown", "sendpay_success"));
+        assertThat(optionNames, hasItems("sar-dry-run", "sar-default-fiat-currency"));
 
         List<String> rpcMethodNames = StreamSupport.stream(manifest.get("rpcmethods").spliterator(), false)
                 .map(it -> it.get("name").asText("-"))
                 .toList();
 
         assertThat(rpcMethodNames, hasItems("sar-listconfigs", "sar-ticker", "sar-version"));
+
+        List<String> subscriptions = StreamSupport.stream(manifest.get("subscriptions").spliterator(), false)
+                .map(it -> it.asText("-"))
+                .toList();
+
+        assertThat(subscriptions, hasItems("shutdown", "sendpay_success"));
     }
 
     @Test
@@ -110,9 +116,10 @@ class ClnSpendAndReplacePluginTest {
 
         JsonNode result = mapper.readTree(output).get("result");
         assertThat(result.isObject(), is(true));
-        assertThat(result.size(), is(1)); // adapt if you add new values
+        assertThat(result.size(), is(2)); // adapt if you add new values
 
         assertThat(result.get("dry-run").asText("-"), is("false"));
+        assertThat(result.get("default-fiat-currency").asText("-"), is("USD"));
     }
 
     @Test

@@ -35,10 +35,17 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
 
     @PluginOption(
             name = "sar-dry-run",
-            defValue = "false",
             typeValue = "flag",
+            defValue = "false",
             description = "Enable dry run. No trades are executed.")
-    private boolean dryRun;
+    boolean dryRun;
+
+    @PluginOption(
+            name = "sar-default-fiat-currency",
+            typeValue = "string",
+            defValue = DEFAULT_FIAT_CURRENCY,
+            description = "The default fiat currency")
+    String defaultFiatCurrency = DEFAULT_FIAT_CURRENCY;
 
     @Override
     public void start() {
@@ -49,7 +56,6 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     public void onInit(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         super.onInit(plugin, request, response);
         this.log(PluginLog.DEBUG, "spend-and-replace initialized. Request:" + request);
-
         // test disable (hint: works!)
         // DEBUG   plugin-spend-and-replace: Killing plugin: disabled itself at init: just testing if disabling works
         // response.add("disable", "just testing if disabling works");
@@ -61,6 +67,7 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     )
     public void rpcListconfigs(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         response.addProperty("dry-run", dryRun);
+        response.addProperty("default-fiat-currency", defaultFiatCurrency);
     }
 
     @RPCMethod(
@@ -70,8 +77,8 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
     public void rpcVersion(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         log(PluginLog.DEBUG, "rpc version invoked: " + request.getWrapper());
 
-        response.add("version", Optional.of(this)
-                .map(it -> it.getClass().getPackage().getImplementationVersion())
+        response.add("version", Optional.of(this.getClass().getPackage())
+                .map(Package::getImplementationVersion)
                 .orElse("local"));
     }
 
@@ -90,7 +97,7 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
                 .filter(it -> !it.isEmpty())
                 .map(it -> it.get(0))
                 .map(it -> it.getAsJsonPrimitive().getAsString())
-                .orElse(DEFAULT_FIAT_CURRENCY);
+                .orElse(this.defaultFiatCurrency);
 
         Currency fiatCurrency = Currency.getInstance(fiatCurrenyParam);
         CurrencyPair currencyPair = new CurrencyPair(bitcoinCurrency, fiatCurrency);
