@@ -13,10 +13,11 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
@@ -57,7 +58,7 @@ class ClnSpendAndReplacePluginTest {
         inWriter.write("""
                 {
                     "jsonrpc": "2.0",
-                    "id": 1,
+                    "id": "getmanifest",
                     "method": "getmanifest",
                     "params": []
                 }\n
@@ -76,6 +77,42 @@ class ClnSpendAndReplacePluginTest {
         assertThat(manifest.get("rpcmethods").isArray(), is(true));
         assertThat(manifest.get("subscriptions").isArray(), is(true));
         assertThat(manifest.get("hooks").isArray(), is(true));
+
+        List<String> subscriptions = StreamSupport.stream(manifest.get("subscriptions").spliterator(), false)
+                .map(it -> it.asText("-"))
+                .toList();
+
+        assertThat(subscriptions, hasItems("shutdown", "sendpay_success"));
+
+        List<String> rpcMethodNames = StreamSupport.stream(manifest.get("rpcmethods").spliterator(), false)
+                .map(it -> it.get("name").asText("-"))
+                .toList();
+
+        assertThat(rpcMethodNames, hasItems("sar-listconfigs", "sar-ticker", "sar-version"));
+    }
+
+    @Test
+    void testSarListconfigs() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "sar-listconfigs",
+                    "method": "sar-listconfigs",
+                    "params": []
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> outCaptor.size() > 0);
+
+        String output = asStringWithoutLogMessages(outCaptor);
+
+        JsonNode result = mapper.readTree(output).get("result");
+        assertThat(result.isObject(), is(true));
+        assertThat(result.size(), is(1)); // adapt if you add new values
+
+        assertThat(result.get("dry-run").asText("-"), is("false"));
     }
 
     @Test
@@ -83,7 +120,7 @@ class ClnSpendAndReplacePluginTest {
         inWriter.write("""
                 {
                     "jsonrpc": "2.0",
-                    "id": 2,
+                    "id": "sar-version",
                     "method": "sar-version",
                     "params": []
                 }\n
@@ -105,7 +142,7 @@ class ClnSpendAndReplacePluginTest {
         inWriter.write("""
                 {
                     "jsonrpc": "2.0",
-                    "id": 2,
+                    "id": "sar-ticker",
                     "method": "sar-ticker",
                     "params": []
                 }\n
