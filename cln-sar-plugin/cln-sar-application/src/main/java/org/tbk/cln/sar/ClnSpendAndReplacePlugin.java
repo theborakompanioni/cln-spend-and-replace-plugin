@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 @RequiredArgsConstructor
 public class ClnSpendAndReplacePlugin extends CLightningPlugin {
@@ -37,7 +38,7 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             name = "sar-dry-run",
             defValue = "false",
             typeValue = "flag",
-            description = "Startup the rest server when the node call the method init.")
+            description = "Enable dry run. No trades are executed.")
     private boolean dryRun;
 
     @Override

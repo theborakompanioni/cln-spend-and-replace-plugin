@@ -25,3 +25,4 @@ org.tbk.xchange:
   specifications:
     krakenExchange:
       exchange-class: org.knowm.xchange.kraken.KrakenExchange
+      should-load-remote-meta-data: false
