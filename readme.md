@@ -30,6 +30,16 @@ user@host:~$ lightning-cli sar-listconfigs
 }
 ```
 
+### `sar-version`
+Command to print the plugin version.
+
+```shell
+user@host:~$ lightning-cli sar-version
+{
+   "version": "0.1.0-dev.4.uncommitted+7f363fa"
+}
+```
+
 ### `sar-ticker`
 Get the ticker representing the current exchange rate for the provided currency.
 
@@ -65,13 +75,66 @@ user@host:~$ lightning-cli sar-ticker GBP
 }
 ```
 
-### `sar-version`
-Command to print the plugin version.
+### `sar-balance`
+Get the balance of your account.
 
 ```shell
-user@host:~$ lightning-cli sar-version
+user@host:~$ lightning-cli sar-balance
 {
-   "version": "0.1.0-dev.4.uncommitted+7f363fa"
+   "result": {
+      "_": {
+         "id": null,
+         "name": null,
+         "balances": {
+            "BTC": {
+               "available": "0.0002100000",
+               "available-for-withdrawal": "0.0002100000",
+               "borrowed": "0",
+               "depositing": "0",
+               "frozen": "0",
+               "loaned": "0",
+               "total": "0.0002100000",
+               "withdrawing": "0"
+            },
+            "USD": {
+               "available": "42.1337",
+               "available-for-withdrawal": "42.1337",
+               "borrowed": "0",
+               "depositing": "0",
+               "frozen": "0",
+               "loaned": "0",
+               "total": "42.1337",
+               "withdrawing": "0"
+            }
+         }
+      },
+      "margin": {
+         "id": "margin",
+         "name": "margin",
+         "balances": {
+            "BTC": {
+               "available": "0.0002100000",
+               "available-for-withdrawal": "0.0002100000",
+               "borrowed": "0",
+               "depositing": "0",
+               "frozen": "0",
+               "loaned": "0",
+               "total": "0.0002100000",
+               "withdrawing": "0"
+            },
+            "USD": {
+               "available": "42.1337",
+               "available-for-withdrawal": "42.1337",
+               "borrowed": "0",
+               "depositing": "0",
+               "frozen": "0",
+               "loaned": "0",
+               "total": "42.1337",
+               "withdrawing": "0"
+            }
+         }
+      }
+   }
 }
 ```
 

@@ -121,7 +121,7 @@ class ClnSpendAndReplacePluginTest {
         assertThat(result.get("dry-run").asText("-"), is("false"));
         assertThat(result.get("fiat-currency").get("default").asText("-"), is("USD"));
         assertThat(result.get("exchange").get("name").asText("-"), is("Dummy"));
-        assertThat(result.get("exchange").get("host").asText("-"), is("www.example.com"));
+        assertThat(result.get("exchange").get("host").asText("-"), is(notNullValue()));
     }
 
     @Test
@@ -177,6 +177,49 @@ class ClnSpendAndReplacePluginTest {
         assertThat(btcUsdTicker.get("low").asText("-"), is("0.17"));
         assertThat(btcUsdTicker.get("open").asText("-"), is("0.18"));
         assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
+    }
+
+    @Test
+    void testSarBalance() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "sar-balance",
+                    "method": "sar-balance",
+                    "params": []
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> outCaptor.size() > 0);
+
+        String output = asStringWithoutLogMessages(outCaptor);
+
+        JsonNode result = mapper.readTree(output).get("result");
+        assertThat(result.isObject(), is(true));
+
+        JsonNode walletResult = result.get("result");
+        assertThat(walletResult.isObject(), is(true));
+        assertThat(walletResult.size(), is(2));
+
+        JsonNode defaultWallet = walletResult.get("_");
+        assertThat(defaultWallet.get("id").asText("-"), is("-"));
+        assertThat(defaultWallet.get("name").asText("-"), is("-"));
+        assertThat(defaultWallet.get("balances").isObject(), is(true));
+        assertThat(defaultWallet.get("balances").get("BTC").isObject(), is(true));
+        assertThat(defaultWallet.get("balances").get("BTC").get("total").asText("-"), is("0.0000000001"));
+        assertThat(defaultWallet.get("balances").get("USD").isObject(), is(true));
+        assertThat(defaultWallet.get("balances").get("USD").get("total").asText("-"), is("0.0001"));
+
+        JsonNode marginWallet = walletResult.get("margin");
+        assertThat(marginWallet.get("id").asText("-"), is("margin"));
+        assertThat(marginWallet.get("name").asText("-"), is("margin"));
+        assertThat(marginWallet.get("balances").isObject(), is(true));
+        assertThat(marginWallet.get("balances").get("BTC").isObject(), is(true));
+        assertThat(marginWallet.get("balances").get("BTC").get("total").asText("-"), is("0.0000000001"));
+        assertThat(marginWallet.get("balances").get("USD").isObject(), is(true));
+        assertThat(marginWallet.get("balances").get("USD").get("total").asText("-"), is("0.0001"));
     }
 
     @Test

@@ -14,13 +14,20 @@ import lombok.RequiredArgsConstructor;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.account.Balance;
+import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 @RequiredArgsConstructor
 public class ClnSpendAndReplacePlugin extends CLightningPlugin {
@@ -66,6 +73,8 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             description = "Command to list all configuration options."
     )
     public void rpcListconfigs(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc 'sar-listconfigs' invoked: " + request.getWrapper());
+
         response.addProperty("dry-run", dryRun);
 
         JsonObject fiatCurrencyData = new JsonObject();
@@ -83,7 +92,7 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             description = "Command to print the plugin version."
     )
     public void rpcVersion(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        log(PluginLog.DEBUG, "rpc version invoked: " + request.getWrapper());
+        log(PluginLog.DEBUG, "rpc 'sar-version' invoked: " + request.getWrapper());
 
         response.add("version", Optional.of(this.getClass().getPackage())
                 .map(Package::getImplementationVersion)
@@ -94,20 +103,19 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             name = "sar-ticker",
             description = "Get the ticker representing the current exchange rate for the provided currency.",
             parameter = "[fiat-currency]"
-
     )
     public void rpcTicker(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
-        log(PluginLog.DEBUG, "rpc ticker invoked: " + request.getWrapper());
+        log(PluginLog.DEBUG, "rpc 'sar-ticker' invoked: " + request.getWrapper());
 
         Currency bitcoinCurrency = Currency.BTC;
-        String fiatCurrenyParam = Optional.ofNullable(request.getAsJsonArray("params"))
+        String fiatCurrencyParam = Optional.ofNullable(request.getAsJsonArray("params"))
                 .filter(JsonElement::isJsonArray)
                 .filter(it -> !it.isEmpty())
                 .map(it -> it.get(0))
                 .map(it -> it.getAsJsonPrimitive().getAsString())
                 .orElse(this.defaultFiatCurrency);
 
-        Currency fiatCurrency = Currency.getInstance(fiatCurrenyParam);
+        Currency fiatCurrency = Currency.getInstance(fiatCurrencyParam);
         CurrencyPair currencyPair = new CurrencyPair(bitcoinCurrency, fiatCurrency);
 
         initExchangeIfNecessary();
@@ -138,6 +146,71 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
             });
 
             response.add("result", result);
+        } catch (IOException e) {
+            response.add("error", e.getMessage());
+        }
+    }
+
+
+    @RPCMethod(
+            name = "sar-balance",
+            description = "Get the balance of your account."
+    )
+    public void rpcBalance(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc 'sar-balance' invoked: " + request.getWrapper());
+
+        initExchangeIfNecessary();
+
+        try {
+            Map<String, Wallet> wallets = exchange.getAccountService()
+                    .getAccountInfo()
+                    .getWallets();
+
+            if (wallets.isEmpty()) {
+                response.add("error", "There is no wallet available.");
+            } else {
+                Map<String, JsonObject> walletJsonMap = wallets.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey, walletEntry -> {
+                            Wallet wallet = walletEntry.getValue();
+
+                            Map<Currency, Balance> positiveBalances = wallet.getBalances().entrySet().stream()
+                                    .filter(it -> it.getValue().getTotal().compareTo(BigDecimal.ZERO) > 0)
+                                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+                            Map<Currency, JsonObject> currencyBalanceJsonMap = positiveBalances.entrySet().stream()
+                                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> {
+                                        Balance balance = entry.getValue();
+
+                                        JsonObject data = new JsonObject();
+                                        data.addProperty("available", nullToZero(balance.getAvailable()).toPlainString());
+                                        data.addProperty("available-for-withdrawal", nullToZero(balance.getAvailableForWithdrawal()).toPlainString());
+                                        data.addProperty("borrowed", nullToZero(balance.getBorrowed()).toPlainString());
+                                        data.addProperty("depositing", nullToZero(balance.getDepositing()).toPlainString());
+                                        data.addProperty("frozen", nullToZero(balance.getFrozen()).toPlainString());
+                                        data.addProperty("loaned", nullToZero(balance.getLoaned()).toPlainString());
+                                        data.addProperty("total", nullToZero(balance.getTotal()).toPlainString());
+                                        data.addProperty("withdrawing", nullToZero(balance.getWithdrawing()).toPlainString());
+                                        return data;
+                                    }));
+
+                            JsonObject balancesData = new JsonObject();
+                            currencyBalanceJsonMap.forEach((key, val) -> balancesData.add(key.getCurrencyCode(), val));
+
+                            JsonObject walletJson = new JsonObject();
+                            walletJson.addProperty("id", wallet.getId());
+                            walletJson.addProperty("name", wallet.getName());
+                            walletJson.add("balances", balancesData);
+                            return walletJson;
+                        }));
+
+                JsonObject walletsData = new JsonObject();
+                walletJsonMap.forEach((key, val) -> {
+                    String safeKey = firstNonNull(key, "_");
+                    walletsData.add(safeKey, val);
+                });
+
+                response.add("result", walletsData);
+            }
         } catch (IOException e) {
             response.add("error", e.getMessage());
         }
@@ -178,5 +251,9 @@ public class ClnSpendAndReplacePlugin extends CLightningPlugin {
         } catch (Exception e) {
             throw new IllegalStateException("Could not initialize exchange", e);
         }
+    }
+
+    private BigDecimal nullToZero(BigDecimal valOrNull) {
+        return firstNonNull(valOrNull, BigDecimal.ZERO);
     }
 }

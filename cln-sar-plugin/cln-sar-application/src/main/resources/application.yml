@@ -26,3 +26,5 @@ org.tbk.xchange:
     pluginExchange:
       exchange-class: org.knowm.xchange.kraken.KrakenExchange
       should-load-remote-meta-data: false
+      #api-key: 'your-dev-api-key'
+      #secret-key: 'your-dev-secret-key'

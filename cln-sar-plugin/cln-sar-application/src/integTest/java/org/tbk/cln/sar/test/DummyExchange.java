@@ -3,7 +3,11 @@ package org.tbk.cln.sar.test;
 import org.knowm.xchange.BaseExchange;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.dto.account.AccountInfo;
+import org.knowm.xchange.dto.account.Balance;
+import org.knowm.xchange.dto.account.Wallet;
 import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.account.AccountService;
@@ -12,6 +16,7 @@ import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
 import org.knowm.xchange.service.marketdata.params.InstrumentsParams;
 import org.knowm.xchange.service.marketdata.params.Params;
 import org.knowm.xchange.service.trade.TradeService;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import si.mazi.rescu.LongValueFactory;
 import si.mazi.rescu.SynchronizedValueFactory;
 
@@ -91,6 +96,33 @@ public class DummyExchange extends BaseExchange implements Exchange {
     }
 
     public static class DummyAccountService implements AccountService {
-
+        @Override
+        public AccountInfo getAccountInfo() {
+            // return a "kraken" like account info object
+            return new AccountInfo(ImmutableList.<Wallet>builder()
+                    .add(Wallet.Builder.from(ImmutableList.<Balance>builder()
+                                    .add(Balance.Builder.from(Balance.zero(Currency.BTC))
+                                            .total(BigDecimal.ONE.movePointLeft(10))
+                                            .build())
+                                    .add(Balance.Builder.from(Balance.zero(Currency.USD))
+                                            .total(BigDecimal.ONE.movePointLeft(4))
+                                            .build())
+                                    .build())
+                            .id(null)
+                            .name(null)
+                            .build())
+                    .add(Wallet.Builder.from(ImmutableList.<Balance>builder()
+                                    .add(Balance.Builder.from(Balance.zero(Currency.BTC))
+                                            .total(BigDecimal.ONE.movePointLeft(10))
+                                            .build())
+                                    .add(Balance.Builder.from(Balance.zero(Currency.USD))
+                                            .total(BigDecimal.ONE.movePointLeft(4))
+                                            .build())
+                                    .build())
+                            .id("margin")
+                            .name("margin")
+                            .build())
+                    .build());
+        }
     }
 }
