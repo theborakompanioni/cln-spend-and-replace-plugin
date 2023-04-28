@@ -1,7 +1,9 @@
 package org.tbk.cln.sar;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +16,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.tbk.cln.sar.test.OutputHelper.containsObjectWithId;
+import static org.tbk.cln.sar.test.OutputHelper.findObjectWithId;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @SpringBootTest(useMainMethod = SpringBootTest.UseMainMethod.ALWAYS)
@@ -29,8 +34,6 @@ class ClnSpendAndReplacePluginTest {
     private static final ByteArrayOutputStream outCaptor = new ByteArrayOutputStream();
     private static final PipedOutputStream inWriter = new PipedOutputStream();
     private static final PipedInputStream inCaptor = new PipedInputStream();
-
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void beforeAll() throws IOException {
@@ -66,31 +69,30 @@ class ClnSpendAndReplacePluginTest {
 
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> outCaptor.size() > 0);
+                .until(() -> containsObjectWithId(outCaptor, "getmanifest"));
 
-        String output = outCaptor.toString(StandardCharsets.UTF_8);
-        assertThat(output, is(notNullValue()));
+        JsonNode output = findObjectWithId(outCaptor, "getmanifest").orElseThrow();
 
-        JsonNode manifest = mapper.readTree(output).get("result");
-        assertThat(manifest.isObject(), is(true));
-        assertThat(manifest.get("options").isArray(), is(true));
-        assertThat(manifest.get("rpcmethods").isArray(), is(true));
-        assertThat(manifest.get("subscriptions").isArray(), is(true));
-        assertThat(manifest.get("hooks").isArray(), is(true));
+        JsonNode result = output.get("result");
+        assertThat(result.isObject(), is(true));
+        assertThat(result.get("options").isArray(), is(true));
+        assertThat(result.get("rpcmethods").isArray(), is(true));
+        assertThat(result.get("subscriptions").isArray(), is(true));
+        assertThat(result.get("hooks").isArray(), is(true));
 
-        List<String> optionNames = StreamSupport.stream(manifest.get("options").spliterator(), false)
+        List<String> optionNames = StreamSupport.stream(result.get("options").spliterator(), false)
                 .map(it -> it.get("name").asText("-"))
                 .toList();
 
         assertThat(optionNames, hasItems("sar-dry-run", "sar-default-fiat-currency"));
 
-        List<String> rpcMethodNames = StreamSupport.stream(manifest.get("rpcmethods").spliterator(), false)
+        List<String> rpcMethodNames = StreamSupport.stream(result.get("rpcmethods").spliterator(), false)
                 .map(it -> it.get("name").asText("-"))
                 .toList();
 
         assertThat(rpcMethodNames, hasItems("sar-listconfigs", "sar-ticker", "sar-version"));
 
-        List<String> subscriptions = StreamSupport.stream(manifest.get("subscriptions").spliterator(), false)
+        List<String> subscriptions = StreamSupport.stream(result.get("subscriptions").spliterator(), false)
                 .map(it -> it.asText("-"))
                 .toList();
 
@@ -110,11 +112,11 @@ class ClnSpendAndReplacePluginTest {
 
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> outCaptor.size() > 0);
+                .until(() -> containsObjectWithId(outCaptor, "sar-listconfigs"));
 
-        String output = asStringWithoutLogMessages(outCaptor);
+        JsonNode output = findObjectWithId(outCaptor, "sar-listconfigs").orElseThrow();
 
-        JsonNode result = mapper.readTree(output).get("result");
+        JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
         assertThat(result.size(), is(3)); // adapt if you add new values
 
@@ -137,11 +139,11 @@ class ClnSpendAndReplacePluginTest {
 
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> outCaptor.size() > 0);
+                .until(() -> containsObjectWithId(outCaptor, "sar-version"));
 
-        String output = asStringWithoutLogMessages(outCaptor);
+        JsonNode output = findObjectWithId(outCaptor, "sar-version").orElseThrow();
 
-        JsonNode result = mapper.readTree(output).get("result");
+        JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
         assertThat(result.get("version").asText("-"), is("local"));
     }
@@ -159,11 +161,11 @@ class ClnSpendAndReplacePluginTest {
 
         await()
                 .atMost(Duration.ofSeconds(50))
-                .until(() -> outCaptor.size() > 0);
+                .until(() -> containsObjectWithId(outCaptor, "sar-ticker"));
 
-        String output = asStringWithoutLogMessages(outCaptor);
+        JsonNode output = findObjectWithId(outCaptor, "sar-ticker").orElseThrow();
 
-        JsonNode result = mapper.readTree(output).get("result");
+        JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
 
         JsonNode tickerResult = result.get("result");
@@ -192,11 +194,11 @@ class ClnSpendAndReplacePluginTest {
 
         await()
                 .atMost(Duration.ofSeconds(5))
-                .until(() -> outCaptor.size() > 0);
+                .until(() -> containsObjectWithId(outCaptor, "sar-balance"));
 
-        String output = asStringWithoutLogMessages(outCaptor);
+        JsonNode output = findObjectWithId(outCaptor, "sar-balance").orElseThrow();
 
-        JsonNode result = mapper.readTree(output).get("result");
+        JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
 
         JsonNode walletResult = result.get("result");
@@ -234,12 +236,12 @@ class ClnSpendAndReplacePluginTest {
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
-                .atMost(Duration.ofSeconds(50))
-                .until(() -> outCaptor.size() > 0);
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> containsObjectWithId(outCaptor, "sar-ticker-gbp"));
 
-        String output = asStringWithoutLogMessages(outCaptor);
+        JsonNode output = findObjectWithId(outCaptor, "sar-ticker-gbp").orElseThrow();
 
-        JsonNode result = mapper.readTree(output).get("result");
+        JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
 
         JsonNode tickerResult = result.get("result");
@@ -255,15 +257,4 @@ class ClnSpendAndReplacePluginTest {
         assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
     }
 
-    private static String asStringWithoutLogMessages(ByteArrayOutputStream baos) {
-        String rawOutput = baos.toString(StandardCharsets.UTF_8);
-        if (!rawOutput.contains("}{")) {
-            return rawOutput;
-        }
-
-        return Arrays.stream(rawOutput.replace("}{", "}}{{").split("}\\{"))
-                .filter(it -> !it.contains("\"method\":\"log\""))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No result found on stdout"));
-    }
 }
