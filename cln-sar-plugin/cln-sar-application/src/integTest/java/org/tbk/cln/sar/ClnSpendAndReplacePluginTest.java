@@ -118,12 +118,14 @@ class ClnSpendAndReplacePluginTest {
 
         JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
-        assertThat(result.size(), is(3)); // adapt if you add new values
 
-        assertThat(result.get("dry-run").asText("-"), is("false"));
-        assertThat(result.get("fiat-currency").get("default").asText("-"), is("USD"));
-        assertThat(result.get("exchange").get("name").asText("-"), is("Dummy"));
-        assertThat(result.get("exchange").get("host").asText("-"), is(notNullValue()));
+        JsonNode configResult = result.get("result");
+        assertThat(configResult.size(), is(3)); // adapt if you add new values
+
+        assertThat(configResult.get("dry-run").asText("-"), is("false"));
+        assertThat(configResult.get("fiat-currency").get("default").asText("-"), is("USD"));
+        assertThat(configResult.get("exchange").get("name").asText("-"), is("Dummy"));
+        assertThat(configResult.get("exchange").get("host").asText("-"), is(notNullValue()));
     }
 
     @Test
@@ -145,7 +147,10 @@ class ClnSpendAndReplacePluginTest {
 
         JsonNode result = output.get("result");
         assertThat(result.isObject(), is(true));
-        assertThat(result.get("version").asText("-"), is("local"));
+
+        JsonNode versionResult = result.get("result");
+
+        assertThat(versionResult.get("version").asText("-"), is("local"));
     }
 
     @Test

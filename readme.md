@@ -19,14 +19,16 @@ Command to list all configuration options.
 ```shell
 user@host:~$ lightning-cli sar-listconfigs
 {
-   "dry-run": false,
-   "fiat-currency": {
-      "default": "USD"
-   },
-   "exchange": {
-      "name": "Kraken",
-      "host": "api.kraken.com"
-   }
+    "result": {
+        "dry-run": false,
+        "fiat-currency": {
+          "default": "USD"
+        },
+        "exchange": {
+          "name": "Kraken",
+          "host": "api.kraken.com"
+        }
+    }
 }
 ```
 
@@ -36,7 +38,9 @@ Command to print the plugin version.
 ```shell
 user@host:~$ lightning-cli sar-version
 {
-   "version": "0.1.0-dev.4.uncommitted+7f363fa"
+    "result": {
+        "version": "0.1.0-dev.4.uncommitted+7f363fa"
+    }
 }
 ```
 
@@ -46,32 +50,32 @@ Get the ticker representing the current exchange rate for the provided currency.
 ```shell
 user@host:~$ lightning-cli sar-ticker
 {
-   "result": {
-      "BTC/USD": {
+    "result": {
+        "BTC/USD": {
          "ask": "27308.20000",
          "bid": "27308.20000",
          "high": "28000.00000",
          "low": "27155.00000",
          "open": "27588.10000",
          "last": "27308.20000"
-      }
-   }
+        }
+    }
 }
 ```
 
 ```shell
 user@host:~$ lightning-cli sar-ticker GBP
 {
-   "result": {
-      "BTC/GBP": {
+    "result": {
+        "BTC/GBP": {
          "ask": "21896.70000",
          "bid": "21896.70000",
          "high": "22496.10000",
          "low": "21803.60000",
          "open": "22201.40000",
          "last": "21901.50000"
-      }
-   }
+        }
+    }
 }
 ```
 
