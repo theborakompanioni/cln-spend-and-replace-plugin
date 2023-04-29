@@ -12,6 +12,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
+import org.knowm.xchange.currency.CurrencyPair;
+import org.knowm.xchange.instrument.Instrument;
+import org.knowm.xchange.service.trade.params.TradeHistoryParamsAll;
+import org.knowm.xchange.service.trade.params.orders.DefaultOpenOrdersParamInstrument;
 import org.tbk.cln.sar.rpc.command.*;
 
 import java.util.function.Supplier;
@@ -31,14 +35,16 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
             name = "sar-dry-run",
             typeValue = "flag",
             defValue = "false",
-            description = "Enable dry run. No trades are executed.")
+            description = "Enable dry run. No trades are executed."
+    )
     boolean dryRun;
 
     @PluginOption(
             name = "sar-default-fiat-currency",
             typeValue = "string",
             defValue = DEFAULT_FIAT_CURRENCY,
-            description = "The default fiat currency")
+            description = "The default fiat currency"
+    )
     String defaultFiatCurrency = DEFAULT_FIAT_CURRENCY;
 
     @Override
@@ -112,6 +118,27 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         execute(plugin, request, response, () -> {
             initExchangeIfNecessary();
             return new BalanceCommand(exchange);
+        });
+    }
+
+
+    @RPCMethod(
+            name = "sar-history",
+            description = "Get the trade history of your account."
+    )
+    public void rpcHistory(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc 'sar-history' invoked: " + request.getWrapper());
+
+        execute(plugin, request, response, () -> {
+            initExchangeIfNecessary();
+
+            Instrument instrument = new CurrencyPair(Currency.BTC, Currency.getInstance(defaultFiatCurrency));
+
+            DefaultOpenOrdersParamInstrument openOrdersParams = new DefaultOpenOrdersParamInstrument(instrument);
+
+            TradeHistoryParamsAll tradeHistoryParams = new TradeHistoryParamsAll();
+            tradeHistoryParams.setInstrument(instrument);
+            return new HistoryCommand(exchange, openOrdersParams, tradeHistoryParams);
         });
     }
 

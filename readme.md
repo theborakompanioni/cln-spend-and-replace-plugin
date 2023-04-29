@@ -142,6 +142,48 @@ user@host:~$ lightning-cli sar-balance
 }
 ```
 
+### `sar-history`
+Get the trade history of your account.
+
+```shell
+user@host:~$ lightning-cli sar-history
+{
+  "result" : {
+    "open" : {
+      "abcdef-00000-000001" : {
+        "id" : "abcdef-00000-000001",
+        "type" : "BID",
+        "status" : "NEW",
+        "is-open" : true,
+        "is-final" : false,
+        "original-amount" : "0.42",
+        "remaining-amount" : "0.42",
+        "limit-price" : "21.0",
+        "asset-pair" : "BTC/USD",
+        "ref" : "0",
+        "date" : "2021-05-26T03:33:20Z",
+        "timestamp" : 1622000000
+      }
+    },
+    "closed" : {
+      "abcdef-00000-000000" : {
+        "id" : "abcdef-00000-000000",
+        "type" : "BID",
+        "order-id" : "abcdef",
+        "price" : "21000.0",
+        "original-amount" : "0.21",
+        "asset-pair" : "BTC/USD",
+        "ref" : "",
+        "fee-amount" : "0.090103",
+        "fee-currency" : "USD",
+        "date" : "2021-05-14T13:46:40Z",
+        "timestamp" : 1621000000
+      }
+    }
+  }
+}
+```
+
 ## Development
 
 ### Requirements

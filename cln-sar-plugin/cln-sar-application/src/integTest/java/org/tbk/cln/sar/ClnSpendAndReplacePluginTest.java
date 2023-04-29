@@ -258,4 +258,55 @@ class ClnSpendAndReplacePluginTest {
         assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
     }
 
+    @Test
+    void testSarHistory() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "sar-history",
+                    "method": "sar-history",
+                    "params": []
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(555))
+                .until(() -> containsObjectWithId(outCaptor, "sar-history"));
+
+        JsonNode output = findObjectWithId(outCaptor, "sar-history").orElseThrow();
+
+        JsonNode result = output.get("result");
+        assertThat(result.isObject(), is(true));
+
+        JsonNode historyResult = result.get("result");
+        assertThat(historyResult.hasNonNull("open"), is(true));
+        assertThat(historyResult.hasNonNull("closed"), is(true));
+
+        JsonNode openOrder = historyResult.get("open").get("abcdef-00000-000001");
+        assertThat(openOrder.get("id").asText("-"), is("abcdef-00000-000001"));
+        assertThat(openOrder.get("type").asText("-"), is("BID"));
+        assertThat(openOrder.get("status").asText("-"), is("NEW"));
+        assertThat(openOrder.get("is-open").asBoolean(), is(true));
+        assertThat(openOrder.get("is-final").asBoolean(), is(false));
+        assertThat(openOrder.get("original-amount").asText("-"), is("0.42"));
+        assertThat(openOrder.get("remaining-amount").asText("-"), is("0.42"));
+        assertThat(openOrder.get("limit-price").asText("-"), is("21.0"));
+        assertThat(openOrder.get("asset-pair").asText("-"), is("BTC/USD"));
+        assertThat(openOrder.get("ref").asText("-"), is("0"));
+        assertThat(openOrder.get("date").asText("-"), is("2021-05-26T03:33:20Z"));
+        assertThat(openOrder.get("timestamp").asInt(-1), is(1622000000));
+
+        JsonNode closedOrder = historyResult.get("closed").get("abcdef-00000-000000");
+        assertThat(closedOrder.get("id").asText("-"), is("abcdef-00000-000000"));
+        assertThat(closedOrder.get("type").asText("-"), is("BID"));
+        assertThat(closedOrder.get("order-id").asText("-"), is("abcdef"));
+        assertThat(closedOrder.get("price").asText("-"), is("21000.0"));
+        assertThat(closedOrder.get("original-amount").asText("-"), is("0.21"));
+        assertThat(closedOrder.get("asset-pair").asText("-"), is("BTC/USD"));
+        assertThat(closedOrder.get("ref").asText("-"), is(""));
+        assertThat(closedOrder.get("fee-amount").asText("-"), is("0.090103"));
+        assertThat(closedOrder.get("fee-currency").asText("-"), is("USD"));
+        assertThat(closedOrder.get("date").asText("-"), is("2021-05-14T13:46:40Z"));
+        assertThat(closedOrder.get("timestamp").asInt(-1), is(1621000000));
+    }
 }
