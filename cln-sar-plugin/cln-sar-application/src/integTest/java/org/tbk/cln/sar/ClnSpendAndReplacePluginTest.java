@@ -1,9 +1,6 @@
 package org.tbk.cln.sar;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,13 +11,12 @@ import org.springframework.test.context.ActiveProfiles;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
 import static org.tbk.cln.sar.test.OutputHelper.containsObjectWithId;
 import static org.tbk.cln.sar.test.OutputHelper.findObjectWithId;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
@@ -125,7 +121,7 @@ class ClnSpendAndReplacePluginTest {
         assertThat(configResult.get("dry-run").asText("-"), is("false"));
         assertThat(configResult.get("fiat-currency").get("default").asText("-"), is("USD"));
         assertThat(configResult.get("exchange").get("name").asText("-"), is("Dummy"));
-        assertThat(configResult.get("exchange").get("host").asText("-"), is(notNullValue()));
+        assertThat(configResult.get("exchange").get("host").asText("-"), is("www.example.com"));
     }
 
     @Test
