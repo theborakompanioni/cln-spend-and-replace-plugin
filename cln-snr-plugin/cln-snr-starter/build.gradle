@@ -1,0 +1,12 @@
+plugins {
+    id 'java'
+}
+
+description = 'cln-spend-and-replace-plugin starter package'
+
+dependencies {
+    api project(':cln-snr-plugin:cln-snr-core')
+    api project(':cln-snr-plugin:cln-snr-autoconfigure')
+
+    implementation 'org.springframework.boot:spring-boot-starter'
+}

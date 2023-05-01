@@ -13,11 +13,11 @@ cln-spend-and-replace-plugin
 
 ## RPC commands
 
-### `sar-listconfigs`
+### `snr-listconfigs`
 Command to list all configuration options.
 
 ```shell
-user@host:~$ lightning-cli sar-listconfigs
+user@host:~$ lightning-cli snr-listconfigs
 {
     "result": {
         "dry-run": false,
@@ -32,11 +32,11 @@ user@host:~$ lightning-cli sar-listconfigs
 }
 ```
 
-### `sar-version`
+### `snr-version`
 Command to print the plugin version.
 
 ```shell
-user@host:~$ lightning-cli sar-version
+user@host:~$ lightning-cli snr-version
 {
     "result": {
         "version": "0.1.0-dev.4.uncommitted+7f363fa"
@@ -44,11 +44,11 @@ user@host:~$ lightning-cli sar-version
 }
 ```
 
-### `sar-ticker`
+### `snr-ticker`
 Get the ticker representing the current exchange rate for the provided currency.
 
 ```shell
-user@host:~$ lightning-cli sar-ticker
+user@host:~$ lightning-cli snr-ticker
 {
     "result": {
         "BTC/USD": {
@@ -64,7 +64,7 @@ user@host:~$ lightning-cli sar-ticker
 ```
 
 ```shell
-user@host:~$ lightning-cli sar-ticker GBP
+user@host:~$ lightning-cli snr-ticker GBP
 {
     "result": {
         "BTC/GBP": {
@@ -79,11 +79,11 @@ user@host:~$ lightning-cli sar-ticker GBP
 }
 ```
 
-### `sar-balance`
+### `snr-balance`
 Get the balance of your account.
 
 ```shell
-user@host:~$ lightning-cli sar-balance
+user@host:~$ lightning-cli snr-balance
 {
    "result": {
       "_": {
@@ -142,11 +142,11 @@ user@host:~$ lightning-cli sar-balance
 }
 ```
 
-### `sar-history`
+### `snr-history`
 Get the trade history of your account.
 
 ```shell
-user@host:~$ lightning-cli sar-history
+user@host:~$ lightning-cli snr-history
 {
   "result" : {
     "open" : {
