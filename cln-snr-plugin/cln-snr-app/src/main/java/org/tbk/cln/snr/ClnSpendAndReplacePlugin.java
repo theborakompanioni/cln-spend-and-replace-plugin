@@ -17,6 +17,8 @@ import org.knowm.xchange.instrument.Instrument;
 import org.knowm.xchange.service.trade.params.TradeHistoryParamsAll;
 import org.knowm.xchange.service.trade.params.orders.DefaultOpenOrdersParamInstrument;
 import org.tbk.cln.snr.rpc.command.*;
+import org.tbk.cln.snr.rpc.subscription.ClnSubscription;
+import org.tbk.cln.snr.rpc.subscription.SendpaySuccess;
 
 import java.util.function.Supplier;
 
@@ -30,6 +32,10 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
 
     @NonNull
     private final Exchange exchange;
+
+
+    @NonNull
+    private final RunOptions runOption;
 
     @PluginOption(
             name = "snr-dry-run",
@@ -56,6 +62,8 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
     public void onInit(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
         super.onInit(plugin, request, response);
         this.log(PluginLog.DEBUG, "spend-and-replace initialized. Request:" + request);
+
+        this.dryRun = this.dryRun || this.runOption.isDryRun();
         // test disable (hint: works!)
         // DEBUG   plugin-spend-and-replace: Killing plugin: disabled itself at init: just testing if disabling works
         // response.add("disable", "just testing if disabling works");
@@ -142,29 +150,49 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         });
     }
 
+    /**
+     * React on 'shutdown' notifications
+     * <p>
+     * <a href="https://lightning.readthedocs.io/PLUGINS.html#shutdown">From the docs</a>:
+     * Send in two situations: lightningd is (almost completely) shutdown, or the plugin stop command has been called
+     * for this plugin. In both cases the plugin has 30 seconds to exit itself, otherwise it’s killed.
+     * In the shutdown case, plugins should not interact with lightnind except via (id-less) logging or notifications.
+     * New rpc calls will fail with error code -5 and (plugin’s) responses will be ignored. Because lightningd can
+     * crash or be killed, a plugin cannot rely on the shutdown notification always been sent.
+     *
+     * @param data The event data
+     */
     @Subscription(notification = "shutdown")
-    public void shutdown(CLightningJsonObject data) {
+    public void onNotificationShutdown(CLightningJsonObject data) {
+        log(PluginLog.DEBUG, "Notification shutdown received.");
         System.exit(shutdownManager.initiateShutdown(0));
     }
 
-    // https://lightning.readthedocs.io/PLUGINS.html?#sendpay-success
+    /**
+     * React on 'sendpay_success' notifications
+     * <p>
+     * <a href="https://lightning.readthedocs.io/PLUGINS.html#sendpay-success">From the docs</a>:
+     * A notification for topic sendpay_success is sent every time a sendpay succeeds (with complete status).
+     * The json is the same as the return value of the commands sendpay/waitsendpay when these commands succeed.
+     *
+     * @param data The event data
+     */
     @Subscription(notification = "sendpay_success")
     public void onNotificationSendpaySuccess(CLightningJsonObject data) {
         log(PluginLog.DEBUG, "Notification sendpay_success received.");
 
-        try {
-            long amountWithFees = data.getAsJsonObject("sendpay_success")
-                    .getAsJsonPrimitive("amount_sent_msat")
-                    .getAsLong();
-            log(PluginLog.DEBUG, "Spent amount which needs to be replaced: " + amountWithFees);
+        this.execute(data, () -> {
+            initExchangeIfNecessary();
+            return new SendpaySuccess(exchange, Currency.getInstance(defaultFiatCurrency), runOptions());
+        });
+    }
 
-            if (dryRun) {
-                log(PluginLog.INFO, "Dry run is active; would have replaced: " + amountWithFees);
-            } else {
-                log(PluginLog.ERROR, "Error while replacing amount: Not implemented yet");
-            }
+    private void execute(CLightningJsonObject data,
+                         Supplier<ClnSubscription> subscriptionSupplier) {
+        try {
+            subscriptionSupplier.get().execute(this, data);
         } catch (Exception e) {
-            // empty on purpose
+            log(PluginLog.ERROR, e.getMessage());
         }
     }
 
@@ -188,5 +216,11 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         } catch (Exception e) {
             throw new IllegalStateException("Could not initialize exchange", e);
         }
+    }
+
+    private RunOptions runOptions() {
+        return this.runOption.toBuilder()
+                .dryRun(this.dryRun)
+                .build();
     }
 }

@@ -20,7 +20,7 @@ public class ClnSpendAndReplaceApplication {
                 .sources(ClnSpendAndReplaceApplication.class)
                 .bannerMode(Banner.Mode.OFF)
                 .web(WebApplicationType.NONE)
-                .profiles("development", "local")
+                //.profiles("development", "local")
                 .run(args);
     }
 }

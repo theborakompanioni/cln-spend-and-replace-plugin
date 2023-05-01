@@ -47,9 +47,35 @@ class ClnSpendAndReplacePluginTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         outCaptor.reset();
-    }
+
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "init",
+                    "method": "init",
+                    "params": {
+                      "options": {
+                        "snr-dry-run": true,
+                        "snr-default-fiat-currency": "USD"
+                      },
+                      "configuration":{
+                        "lightning-dir": "/home/clightning/.lightning/regtest",
+                        "rpc-file": "lightning-rpc",
+                        "startup": true,
+                        "network": "regtest",
+                        "feature_set": {
+                          "init": "08a000080269a2",
+                          "node": "88a000080269a2",
+                          "channel": "",
+                          "invoice":"02000000024100"
+                        }
+                      }
+                    }
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+        }
 
     @Test
     void testGetManifest() throws IOException {
@@ -117,7 +143,7 @@ class ClnSpendAndReplacePluginTest {
         JsonNode configResult = result.get("result");
         assertThat(configResult.size(), is(3)); // adapt if you add new values
 
-        assertThat(configResult.get("dry-run").asText("-"), is("false"));
+        assertThat(configResult.get("dry-run").asText("-"), is("true"));
         assertThat(configResult.get("fiat-currency").get("default").asText("-"), is("USD"));
         assertThat(configResult.get("exchange").get("name").asText("-"), is("Dummy"));
         assertThat(configResult.get("exchange").get("host").asText("-"), is("www.example.com"));

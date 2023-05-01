@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static java.util.Objects.requireNonNull;
+
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 public class ClnSpendAndReplaceApplicationConfig {
@@ -23,8 +25,9 @@ public class ClnSpendAndReplaceApplicationConfig {
 
     @Bean
     public ClnSpendAndReplacePlugin clnSpendAndReplacePlugin(ApplicationShutdownManager applicationShutdownManager,
-                                                             Exchange exchange) {
-        return new ClnSpendAndReplacePlugin(applicationShutdownManager, exchange);
+                                                             Exchange exchange,
+                                                             RunOptions dryRunOption) {
+        return new ClnSpendAndReplacePlugin(applicationShutdownManager, exchange, dryRunOption);
     }
 
     @Bean

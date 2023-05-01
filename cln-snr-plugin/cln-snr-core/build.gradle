@@ -11,5 +11,9 @@ dependencies {
     // implementation "com.google.code.gson:gson:${gsonVersion}"
     api "org.knowm.xchange:xchange-core:${xChangeVersion}"
 
+    implementation "fr.acinq.secp256k1:secp256k1-kmp-jni-jvm:${acinqSecp256k1KmpVersion}"
+    implementation "fr.acinq.bitcoin:bitcoin-kmp-jvm:${acinqBitcoinKmpVersion}"
+    implementation "fr.acinq.lightning:lightning-kmp-jvm:${acinqLightningKmpVersion}"
+
     api "io.projectreactor:reactor-core"
 }
