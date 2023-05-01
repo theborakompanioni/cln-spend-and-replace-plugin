@@ -3,18 +3,9 @@ apply plugin: 'org.springframework.boot'
 description = 'cln-spend-and-replace-plugin application package'
 
 dependencies {
-    implementation files('../../libs/jrpclightning-0.2.4-SNAPSHOT.jar')
-    // implementation "io.github.clightning4j:jrpclightning:${jrpclightningVersion}"
-    // needed till https://github.com/clightning4j/JRPClightning/pull/80 is released
-    // implementation "com.google.code.gson:gson:${gsonVersion}"
-
     implementation project(':cln-snr-plugin:cln-snr-starter')
 
-    implementation "io.github.theborakompanioni:bitcoin-jsr354-starter:${bitcoinSpringBootStarterVersion}"
-    implementation "io.github.theborakompanioni:spring-jsr354-starter:${bitcoinSpringBootStarterVersion}"
-    implementation "io.github.theborakompanioni:xchange-jsr354-starter:${bitcoinSpringBootStarterVersion}"
     implementation "io.github.theborakompanioni:spring-xchange-starter:${bitcoinSpringBootStarterVersion}"
-
 
     implementation 'org.springframework.boot:spring-boot-starter'
     //implementation 'org.springframework.boot:spring-boot-starter-web'

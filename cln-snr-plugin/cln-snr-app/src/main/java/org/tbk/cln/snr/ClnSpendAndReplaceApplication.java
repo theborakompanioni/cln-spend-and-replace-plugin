@@ -18,20 +18,9 @@ public class ClnSpendAndReplaceApplication {
     public static void main(String[] args) {
         new SpringApplicationBuilder()
                 .sources(ClnSpendAndReplaceApplication.class)
-                //.listeners(applicationPidFileWriter(), webServerPortFileWriter())
                 .bannerMode(Banner.Mode.OFF)
                 .web(WebApplicationType.NONE)
                 .profiles("development", "local")
                 .run(args);
     }
-
-    /*
-    public static ApplicationListener<?> applicationPidFileWriter() {
-        return new ApplicationPidFileWriter("application.pid");
-    }
-
-    public static ApplicationListener<?> webServerPortFileWriter() {
-        return new WebServerPortFileWriter("application.port");
-    }*/
-
 }

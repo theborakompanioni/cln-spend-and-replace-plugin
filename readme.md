@@ -242,12 +242,12 @@ Before you start, please read the [contributing guidelines](contributing.md).
 
 - Bitcoin: https://bitcoin.org/en/getting-started
 - Lightning Network: https://lightning.network
-- Spring Boot (GitHub): https://github.com/spring-projects/spring-boot
 - cln Plugin Docs: https://lightning.readthedocs.io/PLUGINS.html
+- Spring Boot (GitHub): https://github.com/spring-projects/spring-boot
 ---
-- Bitcoin Core (GitHub): https://github.com/bitcoin/bitcoin
 - cln (GitHub): https://github.com/ElementsProject/lightning ([Docker](https://hub.docker.com/r/elementsproject/lightningd))
 - JRPClightning (GitHub): https://github.com/clightning4j/JRPClightning
+- XChange (GitHub): https://github.com/knowm/XChange
 - bitcoin-spring-boot-starter (GitHub): https://github.com/theborakompanioni/bitcoin-spring-boot-starter
 
 ## License

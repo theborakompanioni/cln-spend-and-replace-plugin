@@ -38,25 +38,7 @@ public class BalanceCommand implements RpcCommand {
         }
 
         Map<String, JsonObject> walletJsonMap = wallets.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, walletEntry -> {
-                    Wallet wallet = walletEntry.getValue();
-
-                    Map<Currency, Balance> positiveBalances = wallet.getBalances().entrySet().stream()
-                            .filter(it -> it.getValue().getTotal().compareTo(BigDecimal.ZERO) > 0)
-                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                    Map<Currency, JsonObject> currencyBalanceJsonMap = positiveBalances.entrySet().stream()
-                            .collect(Collectors.toMap(Map.Entry::getKey, entry -> toJson(entry.getValue())));
-
-                    JsonObject balancesData = new JsonObject();
-                    currencyBalanceJsonMap.forEach((key, val) -> balancesData.add(key.getCurrencyCode(), val));
-
-                    JsonObject walletJson = new JsonObject();
-                    walletJson.addProperty("id", wallet.getId());
-                    walletJson.addProperty("name", wallet.getName());
-                    walletJson.add("balances", balancesData);
-                    return walletJson;
-                }));
+                .collect(Collectors.toMap(Map.Entry::getKey, walletEntry -> toJson(walletEntry.getValue())));
 
         JsonObject walletsData = new JsonObject();
         walletJsonMap.forEach((key, val) -> {
@@ -65,6 +47,24 @@ public class BalanceCommand implements RpcCommand {
         });
 
         response.add("result", walletsData);
+    }
+
+    private static JsonObject toJson(Wallet wallet) {
+        Map<Currency, Balance> positiveBalances = wallet.getBalances().entrySet().stream()
+                .filter(it -> it.getValue().getTotal().compareTo(BigDecimal.ZERO) > 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<Currency, JsonObject> currencyBalanceJsonMap = positiveBalances.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> toJson(entry.getValue())));
+
+        JsonObject balancesData = new JsonObject();
+        currencyBalanceJsonMap.forEach((key, val) -> balancesData.add(key.getCurrencyCode(), val));
+
+        JsonObject data = new JsonObject();
+        data.addProperty("id", wallet.getId());
+        data.addProperty("name", wallet.getName());
+        data.add("balances", balancesData);
+        return data;
     }
 
     private static JsonObject toJson(Balance balance) {

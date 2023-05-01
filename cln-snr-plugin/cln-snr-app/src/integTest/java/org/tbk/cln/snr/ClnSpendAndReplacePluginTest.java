@@ -15,8 +15,7 @@ import java.util.List;
 import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.tbk.cln.snr.test.OutputHelper.containsObjectWithId;
 import static org.tbk.cln.snr.test.OutputHelper.findObjectWithId;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
@@ -146,7 +145,8 @@ class ClnSpendAndReplacePluginTest {
 
         JsonNode versionResult = result.get("result");
 
-        assertThat(versionResult.get("version").asText("-"), is("local"));
+        // regex taken directly from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        assertThat(versionResult.get("version").asText("-"), matchesRegex("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"));
     }
 
     @Test
