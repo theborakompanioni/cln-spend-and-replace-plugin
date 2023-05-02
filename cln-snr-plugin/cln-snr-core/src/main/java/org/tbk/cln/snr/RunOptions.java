@@ -7,5 +7,4 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class RunOptions {
     boolean dryRun;
-    boolean demo;
 }

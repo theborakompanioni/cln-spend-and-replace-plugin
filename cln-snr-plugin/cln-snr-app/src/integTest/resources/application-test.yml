@@ -13,7 +13,6 @@ management.server.port: 9001
 org.tbk.cln.plugin.spend-and-replace:
   enabled: true
   dry: true
-  demo: true
 
 org.tbk.xchange:
   enabled: true

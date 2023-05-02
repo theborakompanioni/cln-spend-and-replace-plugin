@@ -20,6 +20,7 @@ import org.tbk.cln.snr.rpc.command.*;
 import org.tbk.cln.snr.rpc.subscription.ClnSubscription;
 import org.tbk.cln.snr.rpc.subscription.SendpaySuccess;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -44,15 +45,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
     )
     boolean dryRun;
 
-
-    @PluginOption(
-            name = "snr-demo-mode",
-            typeValue = "flag",
-            defValue = "false",
-            description = "Enable demo mode. Trades are executed on a real exchange, but with extremely low prices."
-    )
-    boolean demoMode;
-
     @PluginOption(
             name = "snr-default-fiat-currency",
             typeValue = "string",
@@ -71,8 +63,22 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         super.onInit(plugin, request, response);
         this.log(PluginLog.DEBUG, "spend-and-replace initialized. Request:" + request);
 
-        this.dryRun = this.dryRun || this.runOption.isDryRun();
-        this.demoMode = this.demoMode || this.runOption.isDemo();
+        Optional<String> networkOrEmpty = Optional.ofNullable(request.getAsJsonObject("params"))
+                .map(it -> it.getAsJsonObject("configuration"))
+                .map(it -> it.getAsJsonPrimitive("network").getAsString());
+
+        if (networkOrEmpty.isEmpty()) {
+            plugin.log(PluginLog.WARNING, "Safety measure: Disable plugin as no network param could be found.");
+            response.add("disable", "No network found");
+            return;
+        }
+
+        boolean isMainnet = networkOrEmpty
+                .map(it -> "bitcoin".equalsIgnoreCase(it) || "mainnet".equalsIgnoreCase(it))
+                .orElse(false);
+
+        this.dryRun = this.dryRun || this.runOption.isDryRun() || !isMainnet;
+
         // test disable (hint: works!)
         // DEBUG   plugin-spend-and-replace: Killing plugin: disabled itself at init: just testing if disabling works
         // response.add("disable", "just testing if disabling works");
@@ -88,7 +94,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         execute(plugin, request, response, () -> {
             JsonObject config = new JsonObject();
             config.addProperty("dry-run", dryRun);
-            config.addProperty("demo-mode", demoMode);
 
             JsonObject fiatCurrencyData = new JsonObject();
             fiatCurrencyData.addProperty("default", defaultFiatCurrency);
@@ -189,7 +194,7 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
      */
     @Subscription(notification = "sendpay_success")
     public void onNotificationSendpaySuccess(CLightningJsonObject data) {
-        log(PluginLog.DEBUG, "Notification sendpay_success received.");
+        log(PluginLog.DEBUG, "Notification 'sendpay_success' received.");
 
         this.execute(data, () -> {
             initExchangeIfNecessary();
@@ -231,7 +236,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
     private RunOptions runOptions() {
         return this.runOption.toBuilder()
                 .dryRun(this.dryRun)
-                .demo(this.demoMode)
                 .build();
     }
 }

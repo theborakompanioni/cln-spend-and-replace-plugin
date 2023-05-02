@@ -36,7 +36,6 @@ public class ClnSpendAndReplacePluginAutoConfiguration {
 
         return RunOptions.builder()
                 .dryRun(dryRunEnabled)
-                .demo(properties.getDemo())
                 .build();
     }
 }

@@ -141,10 +141,9 @@ class ClnSpendAndReplacePluginTest {
         assertThat(result.isObject(), is(true));
 
         JsonNode configResult = result.get("result");
-        assertThat(configResult.size(), is(4)); // adapt if you add new values
+        assertThat(configResult.size(), is(3)); // adapt if you add new values
 
         assertThat(configResult.get("dry-run").asText("-"), is("true"));
-        assertThat(configResult.get("demo-mode").asText("-"), is("true"));
         assertThat(configResult.get("fiat-currency").get("default").asText("-"), is("USD"));
         assertThat(configResult.get("exchange").get("name").asText("-"), is("Dummy"));
         assertThat(configResult.get("exchange").get("host").asText("-"), is("localhost:8883"));

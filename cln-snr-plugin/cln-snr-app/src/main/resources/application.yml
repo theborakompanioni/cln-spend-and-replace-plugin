@@ -22,8 +22,7 @@ logging.level.org.springframework.web.servlet.mvc.method.annotation.RequestMappi
 
 org.tbk.cln.plugin.spend-and-replace:
   enabled: true
-  dry: false
-  demo: true # keep in 'demo mode' till reaching v0.0.1
+  dry: true  # keep in 'demo mode' till reaching v0.0.1
 
 org.tbk.xchange:
   enabled: true
