@@ -21,6 +21,7 @@ user@host:~$ lightning-cli snr-listconfigs
 {
     "result": {
         "dry-run": false,
+        "demo-mode": false,
         "fiat-currency": {
           "default": "USD"
         },

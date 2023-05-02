@@ -53,7 +53,7 @@ public class SendpaySuccess implements ClnSubscription {
             }
 
             BigDecimal availableFiatBalance = fetchAvailableFiatBalance();
-            plugin.log(PluginLog.DEBUG, "Available fiat amount on exchange: " + availableFiatBalance);
+            plugin.log(PluginLog.DEBUG, "Available fiat amount on exchange: " + availableFiatBalance.toPlainString());
 
             plugin.log(PluginLog.ERROR, "Error while replacing amount: Not implemented yet");
         }

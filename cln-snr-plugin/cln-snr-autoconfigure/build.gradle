@@ -6,6 +6,7 @@ description = 'cln-spend-and-replace-plugin autoconfigure package'
 
 dependencies {
     compileOnly project(':cln-snr-plugin:cln-snr-core')
+    compileOnly project(':cln-snr-plugin:cln-snr-demo')
 
     implementation "org.springframework.boot:spring-boot-autoconfigure"
 

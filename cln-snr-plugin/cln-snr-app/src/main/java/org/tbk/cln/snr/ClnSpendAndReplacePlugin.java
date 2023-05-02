@@ -33,7 +33,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
     @NonNull
     private final Exchange exchange;
 
-
     @NonNull
     private final RunOptions runOption;
 
@@ -41,9 +40,18 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
             name = "snr-dry-run",
             typeValue = "flag",
             defValue = "false",
-            description = "Enable dry run. No trades are executed."
+            description = "Enable dry run. Trades are executed against a demo exchange."
     )
     boolean dryRun;
+
+
+    @PluginOption(
+            name = "snr-demo-mode",
+            typeValue = "flag",
+            defValue = "false",
+            description = "Enable demo mode. Trades are executed on a real exchange, but with extremely low prices."
+    )
+    boolean demoMode;
 
     @PluginOption(
             name = "snr-default-fiat-currency",
@@ -64,6 +72,7 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         this.log(PluginLog.DEBUG, "spend-and-replace initialized. Request:" + request);
 
         this.dryRun = this.dryRun || this.runOption.isDryRun();
+        this.demoMode = this.demoMode || this.runOption.isDemo();
         // test disable (hint: works!)
         // DEBUG   plugin-spend-and-replace: Killing plugin: disabled itself at init: just testing if disabling works
         // response.add("disable", "just testing if disabling works");
@@ -79,6 +88,7 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         execute(plugin, request, response, () -> {
             JsonObject config = new JsonObject();
             config.addProperty("dry-run", dryRun);
+            config.addProperty("demo-mode", demoMode);
 
             JsonObject fiatCurrencyData = new JsonObject();
             fiatCurrencyData.addProperty("default", defaultFiatCurrency);
@@ -221,6 +231,7 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
     private RunOptions runOptions() {
         return this.runOption.toBuilder()
                 .dryRun(this.dryRun)
+                .demo(this.demoMode)
                 .build();
     }
 }

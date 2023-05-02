@@ -19,7 +19,13 @@ public class ClnSpendAndReplacePluginAutoConfigurationProperties {
 
     private Boolean dry;
 
+    private Boolean demo;
+
     public boolean getDry() {
         return Objects.requireNonNullElse(dry, false);
+    }
+
+    public boolean getDemo() {
+        return Objects.requireNonNullElse(demo, false);
     }
 }

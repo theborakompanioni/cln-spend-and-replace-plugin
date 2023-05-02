@@ -1,4 +1,4 @@
-package org.tbk.cln.snr.test;
+package org.tbk.cln.snr.demo.exchange;
 
 import org.knowm.xchange.BaseExchange;
 import org.knowm.xchange.Exchange;
@@ -24,16 +24,12 @@ import org.knowm.xchange.service.marketdata.params.Params;
 import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.service.trade.params.TradeHistoryParams;
 import org.knowm.xchange.service.trade.params.orders.OpenOrdersParams;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import si.mazi.rescu.LongValueFactory;
 import si.mazi.rescu.SynchronizedValueFactory;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DummyExchange extends BaseExchange implements Exchange {
@@ -54,11 +50,11 @@ public class DummyExchange extends BaseExchange implements Exchange {
     @Override
     public ExchangeSpecification getDefaultExchangeSpecification() {
         ExchangeSpecification exchangeSpecification = new ExchangeSpecification(this.getClass());
-        exchangeSpecification.setSslUri("https://www.example.com");
-        exchangeSpecification.setHost("www.example.com");
+        exchangeSpecification.setSslUri("https://localhost:8883");
+        exchangeSpecification.setHost("localhost:8883");
         exchangeSpecification.setPort(80);
         exchangeSpecification.setExchangeName("Dummy");
-        exchangeSpecification.setExchangeDescription("Dummy is an exchange that should only be used in tests");
+        exchangeSpecification.setExchangeDescription("Dummy is an exchange that should only be used while testing");
         exchangeSpecification.setShouldLoadRemoteMetaData(false);
         return exchangeSpecification;
     }
@@ -119,17 +115,15 @@ public class DummyExchange extends BaseExchange implements Exchange {
          */
         @Override
         public OpenOrders getOpenOrders(OpenOrdersParams params) {
-            return new OpenOrders(ImmutableList.<LimitOrder>builder()
-                    .add(new LimitOrder.Builder(Order.OrderType.BID, CurrencyPair.BTC_USD)
-                            .id("abcdef-00000-000001")
-                            .orderStatus(Order.OrderStatus.NEW)
-                            .originalAmount(BigDecimal.valueOf(0.42d))
-                            .remainingAmount(BigDecimal.valueOf(0.42d))
-                            .limitPrice(BigDecimal.valueOf(21.0))
-                            .userReference("0")
-                            .timestamp(Date.from(Instant.ofEpochSecond(1622000000)))
-                            .build())
-                    .build());
+            return new OpenOrders(List.of(new LimitOrder.Builder(Order.OrderType.BID, CurrencyPair.BTC_USD)
+                    .id("abcdef-00000-000001")
+                    .orderStatus(Order.OrderStatus.NEW)
+                    .originalAmount(BigDecimal.valueOf(0.42d))
+                    .remainingAmount(BigDecimal.valueOf(0.42d))
+                    .limitPrice(BigDecimal.valueOf(21.0))
+                    .userReference("0")
+                    .timestamp(Date.from(Instant.ofEpochSecond(1622000000)))
+                    .build()));
         }
 
         /**
@@ -149,21 +143,18 @@ public class DummyExchange extends BaseExchange implements Exchange {
          */
         @Override
         public UserTrades getTradeHistory(TradeHistoryParams params) {
-            return new UserTrades(
-                    ImmutableList.<UserTrade>builder()
-                            .add(new UserTrade.Builder()
-                                    .id("abcdef-00000-000000")
-                                    .type(Order.OrderType.BID)
-                                    .orderId("abcdef")
-                                    .price(BigDecimal.valueOf(21000.00000d))
-                                    .originalAmount(BigDecimal.valueOf(0.21d))
-                                    .instrument(CurrencyPair.BTC_USD)
-                                    .feeAmount(BigDecimal.valueOf(0.090103d))
-                                    .feeCurrency(Currency.USD)
-                                    .orderUserReference("")
-                                    .timestamp(Date.from(Instant.ofEpochSecond(1621000000)))
-                                    .build())
-                            .build(),
+            return new UserTrades(List.of(new UserTrade.Builder()
+                    .id("abcdef-00000-000000")
+                    .type(Order.OrderType.BID)
+                    .orderId("abcdef")
+                    .price(BigDecimal.valueOf(21000.00000d))
+                    .originalAmount(BigDecimal.valueOf(0.21d))
+                    .instrument(CurrencyPair.BTC_USD)
+                    .feeAmount(BigDecimal.valueOf(0.090103d))
+                    .feeCurrency(Currency.USD)
+                    .orderUserReference("")
+                    .timestamp(Date.from(Instant.ofEpochSecond(1621000000)))
+                    .build()),
                     Trades.TradeSortType.SortByTimestamp
             );
         }
@@ -173,30 +164,32 @@ public class DummyExchange extends BaseExchange implements Exchange {
         @Override
         public AccountInfo getAccountInfo() {
             // return a "kraken" like account info object
-            return new AccountInfo(ImmutableList.<Wallet>builder()
-                    .add(Wallet.Builder.from(ImmutableList.<Balance>builder()
-                                    .add(Balance.Builder.from(Balance.zero(Currency.BTC))
+            return new AccountInfo(List.of(
+                    Wallet.Builder.from(List.of(
+                                    Balance.Builder.from(Balance.zero(Currency.BTC))
                                             .total(BigDecimal.ONE.movePointLeft(10))
-                                            .build())
-                                    .add(Balance.Builder.from(Balance.zero(Currency.USD))
+                                            .build(),
+                                    Balance.Builder.from(Balance.zero(Currency.USD))
                                             .total(BigDecimal.ONE.movePointLeft(4))
                                             .build())
-                                    .build())
+                            )
                             .id(null)
                             .name(null)
-                            .build())
-                    .add(Wallet.Builder.from(ImmutableList.<Balance>builder()
-                                    .add(Balance.Builder.from(Balance.zero(Currency.BTC))
+                            .build(),
+                    Wallet.Builder.from(List.of(
+                                    Balance.Builder.from(Balance.zero(Currency.BTC))
                                             .total(BigDecimal.ONE.movePointLeft(10))
-                                            .build())
-                                    .add(Balance.Builder.from(Balance.zero(Currency.USD))
+                                            .build(),
+                                    Balance.Builder.from(Balance.zero(Currency.USD))
                                             .total(BigDecimal.ONE.movePointLeft(4))
-                                            .build())
-                                    .build())
+                                            .build()))
                             .id("margin")
                             .name("margin")
+                            .features(EnumSet.of(Wallet.WalletFeature.FUNDING, Wallet.WalletFeature.MARGIN_TRADING))
+                            .maxLeverage(BigDecimal.valueOf(5))
+                            .currentLeverage(BigDecimal.ZERO)
                             .build())
-                    .build());
+            );
         }
     }
 }

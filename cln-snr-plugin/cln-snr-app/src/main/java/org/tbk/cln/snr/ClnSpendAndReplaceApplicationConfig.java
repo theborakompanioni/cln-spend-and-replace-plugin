@@ -3,20 +3,30 @@ package org.tbk.cln.snr;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchange.Exchange;
+import org.knowm.xchange.ExchangeFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.tbk.cln.snr.demo.exchange.DummyExchange;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static java.util.Objects.requireNonNull;
-
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 public class ClnSpendAndReplaceApplicationConfig {
+
+    @Primary
+    @Bean
+    public Exchange primaryExchange(RunOptions runOptions, Exchange exchange) {
+        if (runOptions.isDemo()) {
+            return ExchangeFactory.INSTANCE.createExchange(DummyExchange.class);
+        }
+        return exchange;
+    }
 
     @Bean
     public ApplicationShutdownManager applicationShutdownManager(ApplicationContext applicationContext) {

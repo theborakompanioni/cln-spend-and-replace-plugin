@@ -1,0 +1,11 @@
+plugins {
+    id 'java'
+}
+
+description = 'cln-spend-and-replace-plugin demo package'
+
+dependencies {
+    api "org.knowm.xchange:xchange-core:${xChangeVersion}"
+
+    api "io.projectreactor:reactor-core"
+}
