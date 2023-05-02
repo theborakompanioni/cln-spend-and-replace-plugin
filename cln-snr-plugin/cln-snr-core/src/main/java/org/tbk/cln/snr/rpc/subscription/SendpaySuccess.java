@@ -1,6 +1,7 @@
 package org.tbk.cln.snr.rpc.subscription;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import fr.acinq.bitcoin.Satoshi;
 import fr.acinq.lightning.MilliSatoshi;
 import jrpc.clightning.plugins.ICLightningPlugin;
@@ -13,6 +14,7 @@ import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
 import org.knowm.xchange.dto.marketdata.Ticker;
+import org.knowm.xchange.dto.meta.InstrumentMetaData;
 import org.knowm.xchange.dto.trade.LimitOrder;
 import org.knowm.xchange.dto.trade.MarketOrder;
 import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
@@ -23,6 +25,7 @@ import org.tbk.cln.snr.RunOptions;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,13 +55,6 @@ public class SendpaySuccess implements ClnSubscription {
         Optional<JsonObject> payload = Optional.ofNullable(data.getAsJsonObject("params"))
                 .map(it -> it.getAsJsonObject("sendpay_success"));
 
-        String shortPaymentHash = payload
-                .map(it -> it.getAsJsonPrimitive("payment_hash"))
-                .map(it -> it.getAsString().substring(0, 8))
-                .orElseThrow(() -> new IllegalStateException("Could not extract 'payment_hash' from payload."));
-
-        String orderUserRef = String.format("cln-snr-%s", shortPaymentHash);
-
         MilliSatoshi amountSent = payload
                 .map(it -> it.getAsJsonPrimitive("msatoshi_sent"))
                 .map(it -> new MilliSatoshi(it.getAsLong()))
@@ -68,17 +64,40 @@ public class SendpaySuccess implements ClnSubscription {
 
         Satoshi amountToReplace = amountSent.truncateToSatoshi().plus(new Satoshi(1L));
 
-        Order order = createOrder(currencyPair, amountToReplace)
-                .userReference(orderUserRef)
+        int shortPaymentHash = payload
+                .map(it -> it.getAsJsonPrimitive("payment_hash"))
+                .map(JsonPrimitive::getAsString)
+                .map(it -> HexFormat.fromHexDigits(it, 0, 8))
+                .orElseThrow(() -> new IllegalStateException("Could not extract 'payment_hash' from payload."));
+
+        InstrumentMetaData instrumentMetaData = exchange.getExchangeMetaData().getInstruments().get(currencyPair);
+        OrderValuesHelper orderValuesHelper = new OrderValuesHelper(instrumentMetaData);
+
+        Order order = createOrder(orderValuesHelper, currencyPair, amountToReplace)
+                // e.g. kraken needs a 32-byte integer as user reference
+                .userReference(String.valueOf(shortPaymentHash))
                 .build();
 
-        plugin.log(PluginLog.INFO, "Will place order: " + order);
+        boolean isUnderMinimum = orderValuesHelper.amountUnderMinimum(order.getOriginalAmount());
+        if (isUnderMinimum) {
+            String warnMessage = String.format("Will **NOT** place order for outgoing payment. Amount is too small: %s < %s",
+                    order.getOriginalAmount().toPlainString(), instrumentMetaData.getMinimumAmount().toPlainString());
+            plugin.log(PluginLog.WARNING, warnMessage);
+        } else {
+            plugin.log(PluginLog.INFO, "Will place order: " + order);
 
-        String orderId = placeOrder(order);
+            try {
+                String orderId = placeOrder(order);
 
-        String successMessage = String.format("Placed an order on %s with id '%s' and ref '%s'",
-                exchange.getExchangeSpecification().getExchangeName(), orderId, order.getUserReference());
-        plugin.log(PluginLog.INFO, successMessage);
+                String successMessage = String.format("Placed an order on %s with id '%s' and ref '%s'",
+                        exchange.getExchangeSpecification().getExchangeName(), orderId, order.getUserReference());
+                plugin.log(PluginLog.INFO, successMessage);
+            } catch (Exception e) {
+                String errorMessage = String.format("Could not place order on %s for amount %s: %s",
+                        exchange.getExchangeSpecification().getExchangeName(), order.getOriginalAmount().toPlainString(), e.getMessage());
+                plugin.log(PluginLog.ERROR, errorMessage);
+            }
+        }
     }
 
     private static BigDecimal satsToBtc(Satoshi val) {
@@ -87,9 +106,7 @@ public class SendpaySuccess implements ClnSubscription {
                 .setScale(BTC_FRACTION_DIGITS, RoundingMode.UNNECESSARY);
     }
 
-    private Order.Builder createOrder(CurrencyPair currencyPair, Satoshi amount) throws Exception {
-        OrderValuesHelper orderValuesHelper = new OrderValuesHelper(exchange.getExchangeMetaData().getInstruments().get(currencyPair));
-
+    private Order.Builder createOrder(OrderValuesHelper orderValuesHelper, CurrencyPair currencyPair, Satoshi amount) throws Exception {
         BigDecimal bitcoinAmount = orderValuesHelper.adjustAmount(satsToBtc(amount));
 
         MarketOrder marketOrder = new MarketOrder.Builder(Order.OrderType.BID, currencyPair)
@@ -103,7 +120,7 @@ public class SendpaySuccess implements ClnSubscription {
             // e.g. from the kraken docs:
             // "[...] we recommend placing very small market orders (orders for the minimum order size),
             // or limit orders that are priced far away from the current market price"
-            BigDecimal priceMultiplier = new BigDecimal("0.01");
+            BigDecimal priceMultiplier = new BigDecimal("0.1");
 
             Ticker ticker = fetchTicker(currencyPair);
 
