@@ -4,7 +4,8 @@
 
 
 <p align="center">
-    <img src="https://github.com/theborakompanioni/cln-spend-and-replace-plugin/blob/master/docs/assets/images/logo.png" alt="Logo" width="255" />
+    <img src="https://github.com/theborakompanioni/cln-spend-and-replace-plugin/blob/master/docs/assets/images/logo-dark.svg#gh-light-mode-only" alt="Logo" width="256" />
+    <img src="https://github.com/theborakompanioni/cln-spend-and-replace-plugin/blob/master/docs/assets/images/logo-light.svg#gh-dark-mode-only" alt="Logo" width="256" />
 </p>
 
 
