@@ -11,6 +11,14 @@
 
 cln-spend-and-replace-plugin
 ===
+Core Lightning :zap: plugin to immediately re-stack all outgoing sats from your node.
+
+**Note**: Most code is still experimental - ~~**use with caution**~~ **do not use till v0.1.0 is reached**.
+This project is under active development. Pull requests and issues are welcome.
+[Look at the changelog](changelog.md) to track notable changes.
+
+- [x] Place limit orders on exchange for all outgoing payments
+- [ ] Withdraw via Lightning automatically
 
 ## RPC commands
 
