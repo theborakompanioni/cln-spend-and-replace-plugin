@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.dto.account.Balance;
@@ -12,20 +11,27 @@ import org.knowm.xchange.dto.account.Wallet;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
 
-@RequiredArgsConstructor
 public class BalanceCommand implements RpcCommand {
-
     private static BigDecimal nullToZero(BigDecimal valOrNull) {
         return firstNonNull(valOrNull, BigDecimal.ZERO);
     }
 
-    @NonNull
     private final Exchange exchange;
+
+    private final Set<Currency> currencies;
+
+    public BalanceCommand(Exchange exchange, Set<Currency> currencies) {
+        this.exchange = requireNonNull(exchange);
+        this.currencies = Collections.unmodifiableSet(currencies);
+    }
 
     @Override
     public void execute(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) throws IOException {
@@ -38,7 +44,7 @@ public class BalanceCommand implements RpcCommand {
         }
 
         Map<String, JsonObject> walletJsonMap = wallets.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, walletEntry -> toJson(walletEntry.getValue())));
+                .collect(Collectors.toMap(Map.Entry::getKey, walletEntry -> toJson(walletEntry.getValue(), currencies)));
 
         JsonObject walletsData = new JsonObject();
         walletJsonMap.forEach((key, val) -> {
@@ -49,8 +55,9 @@ public class BalanceCommand implements RpcCommand {
         response.add("result", walletsData);
     }
 
-    private static JsonObject toJson(Wallet wallet) {
+    private static JsonObject toJson(Wallet wallet, Set<Currency> currencies) {
         Map<Currency, Balance> positiveBalances = wallet.getBalances().entrySet().stream()
+                .filter(it -> currencies.contains(it.getValue().getCurrency()))
                 .filter(it -> it.getValue().getTotal().compareTo(BigDecimal.ZERO) > 0)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 

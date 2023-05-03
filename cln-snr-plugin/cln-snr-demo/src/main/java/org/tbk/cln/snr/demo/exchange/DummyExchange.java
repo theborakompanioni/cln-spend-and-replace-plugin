@@ -171,6 +171,9 @@ public class DummyExchange extends BaseExchange implements Exchange {
                                             .build(),
                                     Balance.Builder.from(Balance.zero(Currency.USD))
                                             .total(BigDecimal.ONE.movePointLeft(4))
+                                            .build(),
+                                    Balance.Builder.from(Balance.zero(Currency.GBP))
+                                            .total(BigDecimal.TEN.movePointLeft(4))
                                             .build())
                             )
                             .id(null)
@@ -182,6 +185,9 @@ public class DummyExchange extends BaseExchange implements Exchange {
                                             .build(),
                                     Balance.Builder.from(Balance.zero(Currency.USD))
                                             .total(BigDecimal.ONE.movePointLeft(4))
+                                            .build(),
+                                    Balance.Builder.from(Balance.zero(Currency.GBP))
+                                            .total(BigDecimal.TEN.movePointLeft(4))
                                             .build()))
                             .id("margin")
                             .name("margin")

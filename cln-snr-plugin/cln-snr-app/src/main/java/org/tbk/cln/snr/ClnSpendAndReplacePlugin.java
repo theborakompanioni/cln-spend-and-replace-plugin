@@ -21,6 +21,7 @@ import org.tbk.cln.snr.rpc.subscription.ClnSubscription;
 import org.tbk.cln.snr.rpc.subscription.SendpaySuccess;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 @RequiredArgsConstructor
@@ -140,7 +141,9 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
 
         execute(plugin, request, response, () -> {
             initExchangeIfNecessary();
-            return new BalanceCommand(exchange);
+
+            Set<Currency> currencies = Set.of(Currency.BTC, Currency.getInstance(defaultFiatCurrency));
+            return new BalanceCommand(exchange, currencies);
         });
     }
 
