@@ -176,6 +176,41 @@ class ClnSpendAndReplacePluginTest {
     }
 
     @Test
+    void testSnrExchangeInfo() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "snr-exchangeinfo",
+                    "method": "snr-exchangeinfo",
+                    "params": []
+                }\n
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> containsObjectWithId(outCaptor, "snr-exchangeinfo"));
+
+        JsonNode output = findObjectWithId(outCaptor, "snr-exchangeinfo").orElseThrow();
+
+        JsonNode result = output.get("result");
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "name" : "Dummy",
+                    "description" : "Dummy is an exchange that should only be used while testing",
+                    "host" : "localhost:8883",
+                    "metadata" : {
+                      "instruments" : {
+                        "BTC/USD" : {
+                          "min-amount" : "0.00001"
+                        }
+                      }
+                    }
+                  }
+                }"""));
+    }
+
+    @Test
     void testSnrTicker() throws IOException {
         inWriter.write("""
                 {

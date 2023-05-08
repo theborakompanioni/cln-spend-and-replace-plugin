@@ -118,6 +118,25 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         execute(plugin, request, response, VersionCommand::new);
     }
 
+
+    @RPCMethod(
+            name = "snr-exchangeinfo",
+            description = "Command to list exchange specific information."
+    )
+    public void rpcExchangeinfo(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc 'snr-exchangeinfo' invoked: " + request.getWrapper());
+
+        execute(plugin, request, response, () -> {
+            initExchangeIfNecessary();
+
+            Set<Instrument> currencyPairs = Set.of(
+                    new CurrencyPair(Currency.BTC, Currency.getInstance(defaultFiatCurrency))
+            );
+
+            return new ExchangeInfoCommand(exchange, currencyPairs);
+        });
+    }
+
     @RPCMethod(
             name = "snr-ticker",
             description = "Get the ticker representing the current exchange rate for the provided currency.",

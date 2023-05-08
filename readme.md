@@ -1,6 +1,6 @@
 [![Build](https://github.com/theborakompanioni/cln-spend-and-replace-plugin/actions/workflows/build.yml/badge.svg)](https://github.com/theborakompanioni/cln-spend-and-replace-plugin/actions/workflows/build.yml)
 [![GitHub Release](https://img.shields.io/github/release/theborakompanioni/cln-spend-and-replace-plugin.svg?maxAge=3600)](https://github.com/theborakompanioni/cln-spend-and-replace-plugin/releases/latest)
-[![License](https://img.shields.io/github/license/theborakompanioni/cln-spend-and-replace-plugin.svg?maxAge=2592000)](https://github.com/theborakompanioni/cln-spend-and-replace-plugin/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/theborakompanioni/cln-spend-and-replace-plugin.svg?maxAge=21000000)](https://github.com/theborakompanioni/cln-spend-and-replace-plugin/blob/master/LICENSE)
 
 
 <p align="center">
@@ -17,8 +17,9 @@ Core Lightning :zap: plugin to immediately re-stack all outgoing sats from your 
 This project is under active development. Pull requests and issues are welcome.
 [Look at the changelog](changelog.md) to track notable changes.
 
-- [x] Place limit orders on exchange for all outgoing payments
-- [ ] Withdraw via Lightning automatically
+- [x] Place market orders on exchange for all outgoing payments
+- [x] In `dry-run` mode (or on any other network than `mainnet`), place massively undervalued limit orders
+- [ ] Blocked: Withdraw via Lightning automatically (according to @pierrerochard, Kraken is working on enabling programmatic withdrawals via lightning; however, it is not live yet)
 
 ## RPC commands
 
@@ -49,6 +50,27 @@ user@host:~$ lightning-cli snr-version
 {
     "result": {
         "version": "0.1.0-dev.4.uncommitted+7f363fa"
+    }
+}
+```
+
+### `snr-exchangeinfo`
+Command to list exchange specific information.
+
+```shell
+user@host:~$ lightning-cli snr-exchangeinfo
+{
+    "result" : {
+        "name" : "Kraken",
+        "description" : "Kraken is a Bitcoin exchange operated by Payward, Inc.",
+        "host" : "api.kraken.com",
+        "metadata" : {
+            "instruments" : {
+                "BTC/USD" : {
+                  "min-amount" : "0.00001"
+                }
+            }
+        }
     }
 }
 ```
