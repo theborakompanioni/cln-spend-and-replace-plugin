@@ -73,7 +73,7 @@ class ClnSpendAndReplacePluginTest {
                         }
                       }
                     }
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
         }
 
@@ -85,7 +85,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "getmanifest",
                     "method": "getmanifest",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -95,29 +95,54 @@ class ClnSpendAndReplacePluginTest {
         JsonNode output = findObjectWithId(outCaptor, "getmanifest").orElseThrow();
 
         JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-        assertThat(result.get("options").isArray(), is(true));
-        assertThat(result.get("rpcmethods").isArray(), is(true));
-        assertThat(result.get("subscriptions").isArray(), is(true));
-        assertThat(result.get("hooks").isArray(), is(true));
-
-        List<String> optionNames = StreamSupport.stream(result.get("options").spliterator(), false)
-                .map(it -> it.get("name").asText("-"))
-                .toList();
-
-        assertThat(optionNames, hasItems("snr-dry-run", "snr-default-fiat-currency"));
-
-        List<String> rpcMethodNames = StreamSupport.stream(result.get("rpcmethods").spliterator(), false)
-                .map(it -> it.get("name").asText("-"))
-                .toList();
-
-        assertThat(rpcMethodNames, hasItems("snr-listconfigs", "snr-ticker", "snr-version"));
-
-        List<String> subscriptions = StreamSupport.stream(result.get("subscriptions").spliterator(), false)
-                .map(it -> it.asText("-"))
-                .toList();
-
-        assertThat(subscriptions, hasItems("shutdown", "sendpay_success"));
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "options" : [ {
+                    "name" : "snr-dry-run",
+                    "type" : "flag",
+                    "default" : "false",
+                    "description" : "Enable dry run. Trades are executed against a demo exchange."
+                  }, {
+                    "name" : "snr-default-fiat-currency",
+                    "type" : "string",
+                    "default" : "USD",
+                    "description" : "The default fiat currency"
+                  } ],
+                  "rpcmethods" : [ {
+                    "name" : "snr-listconfigs",
+                    "usage" : "",
+                    "description" : "Command to list all configuration options."
+                  }, {
+                    "name" : "snr-history",
+                    "usage" : "",
+                    "description" : "Get the trade history of your account."
+                  }, {
+                    "name" : "snr-balance",
+                    "usage" : "",
+                    "description" : "Get the balance of your account."
+                  }, {
+                    "name" : "snr-version",
+                    "usage" : "",
+                    "description" : "Command to print the plugin version."
+                  }, {
+                    "name" : "snr-exchangeinfo",
+                    "usage" : "",
+                    "description" : "Command to list exchange specific information."
+                  }, {
+                    "name" : "snr-ticker",
+                    "usage" : "[fiat-currency]",
+                    "description" : "Get the ticker representing the current exchange rate for the provided currency."
+                  } ],
+                  "subscriptions" : [ "shutdown", "sendpay_success" ],
+                  "hooks" : [ ],
+                  "features" : {
+                    "node" : null,
+                    "channel" : null,
+                    "init" : null,
+                    "invoice" : null
+                  },
+                  "dynamic" : true
+                }"""));
     }
 
     @Test
@@ -128,7 +153,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-listconfigs",
                     "method": "snr-listconfigs",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -138,15 +163,19 @@ class ClnSpendAndReplacePluginTest {
         JsonNode output = findObjectWithId(outCaptor, "snr-listconfigs").orElseThrow();
 
         JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-
-        JsonNode configResult = result.get("result");
-        assertThat(configResult.size(), is(3)); // adapt if you add new values
-
-        assertThat(configResult.get("dry-run").asText("-"), is("true"));
-        assertThat(configResult.get("fiat-currency").get("default").asText("-"), is("USD"));
-        assertThat(configResult.get("exchange").get("name").asText("-"), is("Dummy"));
-        assertThat(configResult.get("exchange").get("host").asText("-"), is("localhost:8883"));
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "dry-run" : true,
+                    "fiat-currency" : {
+                      "default" : "USD"
+                    },
+                    "exchange" : {
+                      "name" : "Dummy",
+                      "host" : "localhost:8883"
+                    }
+                  }
+                }"""));
     }
 
     @Test
@@ -157,7 +186,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-version",
                     "method": "snr-version",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -183,7 +212,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-exchangeinfo",
                     "method": "snr-exchangeinfo",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -218,7 +247,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-ticker",
                     "method": "snr-ticker",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -228,62 +257,19 @@ class ClnSpendAndReplacePluginTest {
         JsonNode output = findObjectWithId(outCaptor, "snr-ticker").orElseThrow();
 
         JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-
-        JsonNode tickerResult = result.get("result");
-        assertThat(tickerResult.hasNonNull("BTC/USD"), is(true));
-
-        JsonNode btcUsdTicker = tickerResult.get("BTC/USD");
-        assertThat(btcUsdTicker.size(), is(6));
-        assertThat(btcUsdTicker.get("ask").asText("-"), is("0.12"));
-        assertThat(btcUsdTicker.get("bid").asText("-"), is("0.14"));
-        assertThat(btcUsdTicker.get("high").asText("-"), is("0.15"));
-        assertThat(btcUsdTicker.get("low").asText("-"), is("0.17"));
-        assertThat(btcUsdTicker.get("open").asText("-"), is("0.18"));
-        assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
-    }
-
-    @Test
-    void testSnrBalance() throws IOException {
-        inWriter.write("""
+        assertThat(result.toPrettyString(), is("""
                 {
-                    "jsonrpc": "2.0",
-                    "id": "snr-balance",
-                    "method": "snr-balance",
-                    "params": []
-                }\n
-                """.getBytes(StandardCharsets.UTF_8));
-
-        await()
-                .atMost(Duration.ofSeconds(5))
-                .until(() -> containsObjectWithId(outCaptor, "snr-balance"));
-
-        JsonNode output = findObjectWithId(outCaptor, "snr-balance").orElseThrow();
-
-        JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-
-        JsonNode walletResult = result.get("result");
-        assertThat(walletResult.isObject(), is(true));
-        assertThat(walletResult.size(), is(2));
-
-        JsonNode defaultWallet = walletResult.get("_");
-        assertThat(defaultWallet.get("id").asText("-"), is("-"));
-        assertThat(defaultWallet.get("name").asText("-"), is("-"));
-        assertThat(defaultWallet.get("balances").isObject(), is(true));
-        assertThat(defaultWallet.get("balances").get("BTC").isObject(), is(true));
-        assertThat(defaultWallet.get("balances").get("BTC").get("total").asText("-"), is("0.0000000001"));
-        assertThat(defaultWallet.get("balances").get("USD").isObject(), is(true));
-        assertThat(defaultWallet.get("balances").get("USD").get("total").asText("-"), is("0.0001"));
-
-        JsonNode marginWallet = walletResult.get("margin");
-        assertThat(marginWallet.get("id").asText("-"), is("margin"));
-        assertThat(marginWallet.get("name").asText("-"), is("margin"));
-        assertThat(marginWallet.get("balances").isObject(), is(true));
-        assertThat(marginWallet.get("balances").get("BTC").isObject(), is(true));
-        assertThat(marginWallet.get("balances").get("BTC").get("total").asText("-"), is("0.0000000001"));
-        assertThat(marginWallet.get("balances").get("USD").isObject(), is(true));
-        assertThat(marginWallet.get("balances").get("USD").get("total").asText("-"), is("0.0001"));
+                  "result" : {
+                    "BTC/USD" : {
+                      "ask" : "0.12",
+                      "bid" : "0.14",
+                      "high" : "0.15",
+                      "low" : "0.17",
+                      "open" : "0.18",
+                      "last" : "0.16"
+                    }
+                  }
+                }"""));
     }
 
     @Test
@@ -294,7 +280,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-ticker-gbp",
                     "method": "snr-ticker",
                     "params": ['GBP']
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -304,21 +290,98 @@ class ClnSpendAndReplacePluginTest {
         JsonNode output = findObjectWithId(outCaptor, "snr-ticker-gbp").orElseThrow();
 
         JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-
-        JsonNode tickerResult = result.get("result");
-        assertThat(tickerResult.hasNonNull("BTC/GBP"), is(true));
-
-        JsonNode btcUsdTicker = tickerResult.get("BTC/GBP");
-        assertThat(btcUsdTicker.size(), is(6));
-        assertThat(btcUsdTicker.get("ask").asText("-"), is("0.12"));
-        assertThat(btcUsdTicker.get("bid").asText("-"), is("0.14"));
-        assertThat(btcUsdTicker.get("high").asText("-"), is("0.15"));
-        assertThat(btcUsdTicker.get("low").asText("-"), is("0.17"));
-        assertThat(btcUsdTicker.get("open").asText("-"), is("0.18"));
-        assertThat(btcUsdTicker.get("last").asText("-"), is("0.16"));
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "BTC/GBP" : {
+                      "ask" : "0.12",
+                      "bid" : "0.14",
+                      "high" : "0.15",
+                      "low" : "0.17",
+                      "open" : "0.18",
+                      "last" : "0.16"
+                    }
+                  }
+                }"""));
     }
 
+
+    @Test
+    void testSnrBalance() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "snr-balance",
+                    "method": "snr-balance",
+                    "params": []
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> containsObjectWithId(outCaptor, "snr-balance"));
+
+        JsonNode output = findObjectWithId(outCaptor, "snr-balance").orElseThrow();
+
+        JsonNode result = output.get("result");
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "_" : {
+                      "id" : null,
+                      "name" : null,
+                      "balances" : {
+                        "BTC" : {
+                          "available" : "0",
+                          "available-for-withdrawal" : "0",
+                          "borrowed" : "0",
+                          "depositing" : "0",
+                          "frozen" : "0",
+                          "loaned" : "0",
+                          "total" : "0.0000000001",
+                          "withdrawing" : "0"
+                        },
+                        "USD" : {
+                          "available" : "0",
+                          "available-for-withdrawal" : "0",
+                          "borrowed" : "0",
+                          "depositing" : "0",
+                          "frozen" : "0",
+                          "loaned" : "0",
+                          "total" : "0.0001",
+                          "withdrawing" : "0"
+                        }
+                      }
+                    },
+                    "margin" : {
+                      "id" : "margin",
+                      "name" : "margin",
+                      "balances" : {
+                        "BTC" : {
+                          "available" : "0",
+                          "available-for-withdrawal" : "0",
+                          "borrowed" : "0",
+                          "depositing" : "0",
+                          "frozen" : "0",
+                          "loaned" : "0",
+                          "total" : "0.0000000001",
+                          "withdrawing" : "0"
+                        },
+                        "USD" : {
+                          "available" : "0",
+                          "available-for-withdrawal" : "0",
+                          "borrowed" : "0",
+                          "depositing" : "0",
+                          "frozen" : "0",
+                          "loaned" : "0",
+                          "total" : "0.0001",
+                          "withdrawing" : "0"
+                        }
+                      }
+                    }
+                  }
+                }"""));
+    }
     @Test
     void testSnrHistory() throws IOException {
         inWriter.write("""
@@ -327,7 +390,7 @@ class ClnSpendAndReplacePluginTest {
                     "id": "snr-history",
                     "method": "snr-history",
                     "params": []
-                }\n
+                }
                 """.getBytes(StandardCharsets.UTF_8));
 
         await()
@@ -337,37 +400,41 @@ class ClnSpendAndReplacePluginTest {
         JsonNode output = findObjectWithId(outCaptor, "snr-history").orElseThrow();
 
         JsonNode result = output.get("result");
-        assertThat(result.isObject(), is(true));
-
-        JsonNode historyResult = result.get("result");
-        assertThat(historyResult.hasNonNull("open"), is(true));
-        assertThat(historyResult.hasNonNull("closed"), is(true));
-
-        JsonNode openOrder = historyResult.get("open").get("abcdef-00000-000001");
-        assertThat(openOrder.get("id").asText("-"), is("abcdef-00000-000001"));
-        assertThat(openOrder.get("type").asText("-"), is("BID"));
-        assertThat(openOrder.get("status").asText("-"), is("NEW"));
-        assertThat(openOrder.get("is-open").asBoolean(), is(true));
-        assertThat(openOrder.get("is-final").asBoolean(), is(false));
-        assertThat(openOrder.get("original-amount").asText("-"), is("0.42"));
-        assertThat(openOrder.get("remaining-amount").asText("-"), is("0.42"));
-        assertThat(openOrder.get("limit-price").asText("-"), is("21.0"));
-        assertThat(openOrder.get("asset-pair").asText("-"), is("BTC/USD"));
-        assertThat(openOrder.get("ref").asText("-"), is("0"));
-        assertThat(openOrder.get("date").asText("-"), is("2021-05-26T03:33:20Z"));
-        assertThat(openOrder.get("timestamp").asInt(-1), is(1622000000));
-
-        JsonNode closedOrder = historyResult.get("closed").get("abcdef-00000-000000");
-        assertThat(closedOrder.get("id").asText("-"), is("abcdef-00000-000000"));
-        assertThat(closedOrder.get("type").asText("-"), is("BID"));
-        assertThat(closedOrder.get("order-id").asText("-"), is("abcdef"));
-        assertThat(closedOrder.get("price").asText("-"), is("21000.0"));
-        assertThat(closedOrder.get("original-amount").asText("-"), is("0.21"));
-        assertThat(closedOrder.get("asset-pair").asText("-"), is("BTC/USD"));
-        assertThat(closedOrder.get("ref").asText("-"), is(""));
-        assertThat(closedOrder.get("fee-amount").asText("-"), is("0.090103"));
-        assertThat(closedOrder.get("fee-currency").asText("-"), is("USD"));
-        assertThat(closedOrder.get("date").asText("-"), is("2021-05-14T13:46:40Z"));
-        assertThat(closedOrder.get("timestamp").asInt(-1), is(1621000000));
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "open" : {
+                      "abcdef-00000-000001" : {
+                        "id" : "abcdef-00000-000001",
+                        "type" : "BID",
+                        "status" : "NEW",
+                        "is-open" : true,
+                        "is-final" : false,
+                        "original-amount" : "0.42",
+                        "remaining-amount" : "0.42",
+                        "limit-price" : "21.0",
+                        "asset-pair" : "BTC/USD",
+                        "ref" : "0",
+                        "date" : "2021-05-26T03:33:20Z",
+                        "timestamp" : 1622000000
+                      }
+                    },
+                    "closed" : {
+                      "abcdef-00000-000000" : {
+                        "id" : "abcdef-00000-000000",
+                        "type" : "BID",
+                        "order-id" : "abcdef",
+                        "price" : "21000.0",
+                        "original-amount" : "0.21",
+                        "asset-pair" : "BTC/USD",
+                        "ref" : "",
+                        "fee-amount" : "0.090103",
+                        "fee-currency" : "USD",
+                        "date" : "2021-05-14T13:46:40Z",
+                        "timestamp" : 1621000000
+                      }
+                    }
+                  }
+                }"""));
     }
 }
