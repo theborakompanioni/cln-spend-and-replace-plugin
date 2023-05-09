@@ -7,40 +7,38 @@ import fr.acinq.lightning.MilliSatoshi;
 import jrpc.clightning.plugins.ICLightningPlugin;
 import jrpc.clightning.plugins.log.PluginLog;
 import jrpc.service.converters.jsonwrapper.CLightningJsonObject;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.knowm.xchange.Exchange;
 import org.knowm.xchange.currency.Currency;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order;
-import org.knowm.xchange.dto.marketdata.Ticker;
 import org.knowm.xchange.dto.meta.InstrumentMetaData;
-import org.knowm.xchange.dto.trade.LimitOrder;
-import org.knowm.xchange.dto.trade.MarketOrder;
-import org.knowm.xchange.service.marketdata.params.CurrencyPairsParam;
-import org.knowm.xchange.service.trade.TradeService;
 import org.knowm.xchange.utils.OrderValuesHelper;
 import org.tbk.cln.snr.RunOptions;
+import org.tbk.cln.snr.exchange.ExchangeService;
+import org.tbk.cln.snr.exchange.OrderId;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HexFormat;
-import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
-public class SendpaySuccess implements ClnSubscription {
-    private static final int BTC_FRACTION_DIGITS = 8;
+import static java.util.Objects.requireNonNull;
 
-    @NonNull
+public class SendpaySuccess implements ClnSubscription {
+
     private final Exchange exchange;
 
-    @NonNull
     private final Currency fiatCurrency;
 
-    @NonNull
     private final RunOptions runOptions;
+
+    private final ExchangeService exchangeService;
+
+    public SendpaySuccess(Exchange exchange, Currency fiatCurrency, RunOptions runOptions) {
+        this.exchange = requireNonNull(exchange);
+        this.fiatCurrency = requireNonNull(fiatCurrency);
+        this.runOptions = requireNonNull(runOptions);
+
+        this.exchangeService = new ExchangeService(exchange);
+    }
 
     @Override
     public void execute(ICLightningPlugin plugin, CLightningJsonObject data) throws Exception {
@@ -73,7 +71,7 @@ public class SendpaySuccess implements ClnSubscription {
         InstrumentMetaData instrumentMetaData = exchange.getExchangeMetaData().getInstruments().get(currencyPair);
         OrderValuesHelper orderValuesHelper = new OrderValuesHelper(instrumentMetaData);
 
-        Order order = createOrder(orderValuesHelper, currencyPair, amountToReplace)
+        Order order = createOrder(currencyPair, amountToReplace)
                 // e.g. kraken needs a 32-byte integer as user reference
                 .userReference(String.valueOf(shortPaymentHash))
                 .build();
@@ -87,7 +85,7 @@ public class SendpaySuccess implements ClnSubscription {
             plugin.log(PluginLog.INFO, "Will place order: " + order);
 
             try {
-                String orderId = placeOrder(order);
+                OrderId orderId = exchangeService.placeOrder(order);
 
                 String successMessage = String.format("Placed an order on %s with id '%s' and ref '%s'",
                         exchange.getExchangeSpecification().getExchangeName(), orderId, order.getUserReference());
@@ -100,62 +98,11 @@ public class SendpaySuccess implements ClnSubscription {
         }
     }
 
-    private static BigDecimal satsToBtc(Satoshi val) {
-        return BigDecimal.valueOf(val.toLong())
-                .movePointLeft(BTC_FRACTION_DIGITS)
-                .setScale(BTC_FRACTION_DIGITS, RoundingMode.UNNECESSARY);
-    }
-
-    private Order.Builder createOrder(OrderValuesHelper orderValuesHelper, CurrencyPair currencyPair, Satoshi amount) throws Exception {
-        BigDecimal bitcoinAmount = orderValuesHelper.adjustAmount(satsToBtc(amount));
-
-        MarketOrder marketOrder = new MarketOrder.Builder(Order.OrderType.BID, currencyPair)
-                .originalAmount(bitcoinAmount)
-                .build();
-
+    private Order.Builder createOrder(CurrencyPair currencyPair, Satoshi amount) {
         if (!runOptions.isDryRun()) {
-            return MarketOrder.Builder.from(marketOrder);
+            return exchangeService.createMarketOrder(currencyPair, amount);
         } else {
-            // Run in demo with massively undervalued order!
-            // e.g. from the kraken docs:
-            // "[...] we recommend placing very small market orders (orders for the minimum order size),
-            // or limit orders that are priced far away from the current market price"
-            BigDecimal priceMultiplier = new BigDecimal("0.1");
-
-            Ticker ticker = fetchTicker(currencyPair);
-
-            BigDecimal buyingPrice = orderValuesHelper
-                    .adjustPrice(ticker.getBid().multiply(priceMultiplier), RoundingMode.CEILING);
-
-            return LimitOrder.Builder.from(marketOrder)
-                    .limitPrice(buyingPrice);
-        }
-    }
-
-    private String placeOrder(Order order) throws IOException {
-        TradeService tradeService = exchange.getTradeService();
-        if (order instanceof MarketOrder marketOrder) {
-            return tradeService.placeMarketOrder(marketOrder);
-        } else if (order instanceof LimitOrder limitOrder) {
-            return tradeService.placeLimitOrder(limitOrder);
-        } else {
-            String errorMessage = String.format("Order type is not supported: %s",
-                    order.getClass().getSimpleName());
-            throw new IllegalStateException(errorMessage);
-        }
-    }
-
-    private Ticker fetchTicker(CurrencyPair currencyPair) {
-        CurrencyPairsParam currencyPairsParam = () -> List.of(currencyPair);
-        try {
-            return exchange.getMarketDataService().getTickers(currencyPairsParam).stream()
-                    .filter(it -> currencyPair.equals(it.getInstrument()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Could not find ticker data for currency pair."));
-        } catch (Exception e) {
-            String errorMessage = String.format("Could not fetch ticker from %s for currency pair '%s'.",
-                    exchange.getExchangeSpecification().getExchangeName(), currencyPair);
-            throw new IllegalStateException(errorMessage, e);
+            return exchangeService.createTestLimitOrder(currencyPair, amount);
         }
     }
 }

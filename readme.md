@@ -29,16 +29,16 @@ Command to list all configuration options.
 ```shell
 user@host:~$ lightning-cli snr-listconfigs
 {
-    "result": {
-        "dry-run": false,
-        "fiat-currency": {
-          "default": "USD"
-        },
-        "exchange": {
-          "name": "Kraken",
-          "host": "api.kraken.com"
-        }
+  "result": {
+    "dry-run": false,
+    "fiat-currency": {
+      "default": "USD"
+    },
+    "exchange": {
+      "name": "Kraken",
+      "host": "api.kraken.com"
     }
+  }
 }
 ```
 
@@ -48,9 +48,9 @@ Command to print the plugin version.
 ```shell
 user@host:~$ lightning-cli snr-version
 {
-    "result": {
-        "version": "0.1.0-dev.4.uncommitted+7f363fa"
-    }
+  "result": {
+    "version": "0.1.0-dev.4.uncommitted+7f363fa"
+  }
 }
 ```
 
@@ -60,18 +60,18 @@ Command to list exchange specific information.
 ```shell
 user@host:~$ lightning-cli snr-exchangeinfo
 {
-    "result" : {
-        "name" : "Kraken",
-        "description" : "Kraken is a Bitcoin exchange operated by Payward, Inc.",
-        "host" : "api.kraken.com",
-        "metadata" : {
-            "instruments" : {
-                "BTC/USD" : {
-                  "min-amount" : "0.00001"
-                }
-            }
+  "result" : {
+    "name": "Kraken",
+    "description": "Kraken is a Bitcoin exchange operated by Payward, Inc.",
+    "host": "api.kraken.com",
+    "metadata": {
+      "instruments": {
+        "BTC/USD": {
+          "min-amount" : "0.00001"
         }
+      }
     }
+  }
 }
 ```
 
@@ -81,32 +81,32 @@ Get the ticker representing the current exchange rate for the provided currency.
 ```shell
 user@host:~$ lightning-cli snr-ticker
 {
-    "result": {
-        "BTC/USD": {
-         "ask": "27308.20000",
-         "bid": "27308.20000",
-         "high": "28000.00000",
-         "low": "27155.00000",
-         "open": "27588.10000",
-         "last": "27308.20000"
-        }
+  "result": {
+    "BTC/USD": {
+      "ask": "27308.20000",
+      "bid": "27308.20000",
+      "high": "28000.00000",
+      "low": "27155.00000",
+      "open": "27588.10000",
+      "last": "27308.20000"
     }
+  }
 }
 ```
 
 ```shell
 user@host:~$ lightning-cli snr-ticker GBP
 {
-    "result": {
-        "BTC/GBP": {
-         "ask": "21896.70000",
-         "bid": "21896.70000",
-         "high": "22496.10000",
-         "low": "21803.60000",
-         "open": "22201.40000",
-         "last": "21901.50000"
-        }
+  "result": {
+    "BTC/GBP": {
+      "ask": "21896.70000",
+      "bid": "21896.70000",
+      "high": "22496.10000",
+      "low": "21803.60000",
+      "open": "22201.40000",
+      "last": "21901.50000"
     }
+  }
 }
 ```
 
@@ -116,60 +116,60 @@ Get the balance of your account.
 ```shell
 user@host:~$ lightning-cli snr-balance
 {
-   "result": {
-      "_": {
-         "id": null,
-         "name": null,
-         "balances": {
-            "BTC": {
-               "available": "0.0002100000",
-               "available-for-withdrawal": "0.0002100000",
-               "borrowed": "0",
-               "depositing": "0",
-               "frozen": "0",
-               "loaned": "0",
-               "total": "0.0002100000",
-               "withdrawing": "0"
-            },
-            "USD": {
-               "available": "42.1337",
-               "available-for-withdrawal": "42.1337",
-               "borrowed": "0",
-               "depositing": "0",
-               "frozen": "0",
-               "loaned": "0",
-               "total": "42.1337",
-               "withdrawing": "0"
-            }
-         }
-      },
-      "margin": {
-         "id": "margin",
-         "name": "margin",
-         "balances": {
-            "BTC": {
-               "available": "0.0002100000",
-               "available-for-withdrawal": "0.0002100000",
-               "borrowed": "0",
-               "depositing": "0",
-               "frozen": "0",
-               "loaned": "0",
-               "total": "0.0002100000",
-               "withdrawing": "0"
-            },
-            "USD": {
-               "available": "42.1337",
-               "available-for-withdrawal": "42.1337",
-               "borrowed": "0",
-               "depositing": "0",
-               "frozen": "0",
-               "loaned": "0",
-               "total": "42.1337",
-               "withdrawing": "0"
-            }
-         }
+  "result": {
+    "_": {
+      "id": null,
+      "name": null,
+      "balances": {
+        "BTC": {
+          "available": "0.0002100000",
+          "available-for-withdrawal": "0.0002100000",
+          "borrowed": "0",
+          "depositing": "0",
+          "frozen": "0",
+          "loaned": "0",
+          "total": "0.0002100000",
+          "withdrawing": "0"
+        },
+        "USD": {
+          "available": "42.1337",
+          "available-for-withdrawal": "42.1337",
+          "borrowed": "0",
+          "depositing": "0",
+          "frozen": "0",
+          "loaned": "0",
+          "total": "42.1337",
+          "withdrawing": "0"
+        }
       }
-   }
+    },
+    "margin": {
+      "id": "margin",
+      "name": "margin",
+      "balances": {
+        "BTC": {
+          "available": "0.0002100000",
+          "available-for-withdrawal": "0.0002100000",
+          "borrowed": "0",
+          "depositing": "0",
+          "frozen": "0",
+          "loaned": "0",
+          "total": "0.0002100000",
+          "withdrawing": "0"
+        },
+        "USD": {
+          "available": "42.1337",
+          "available-for-withdrawal": "42.1337",
+          "borrowed": "0",
+          "depositing": "0",
+          "frozen": "0",
+          "loaned": "0",
+          "total": "42.1337",
+          "withdrawing": "0"
+        }
+      }
+    }
+  }
 }
 ```
 
@@ -179,37 +179,55 @@ Get the trade history of your account.
 ```shell
 user@host:~$ lightning-cli snr-history
 {
-  "result" : {
-    "open" : {
-      "abcdef-00000-000001" : {
-        "id" : "abcdef-00000-000001",
-        "type" : "BID",
-        "status" : "NEW",
-        "is-open" : true,
-        "is-final" : false,
-        "original-amount" : "0.42",
-        "remaining-amount" : "0.42",
-        "limit-price" : "21.0",
-        "asset-pair" : "BTC/USD",
-        "ref" : "0",
-        "date" : "2021-05-26T03:33:20Z",
-        "timestamp" : 1622000000
+  "result": {
+    "open": {
+      "abcdef-00000-000001": {
+        "id": "abcdef-00000-000001",
+        "type": "BID",
+        "status": "NEW",
+        "is-open": true,
+        "is-final": false,
+        "original-amount": "0.42",
+        "remaining-amount": "0.42",
+        "limit-price": "21.0",
+        "asset-pair": "BTC/USD",
+        "ref": "0",
+        "date": "2021-05-26T03:33:20Z",
+        "timestamp": 1622000000
       }
     },
-    "closed" : {
-      "abcdef-00000-000000" : {
-        "id" : "abcdef-00000-000000",
-        "type" : "BID",
-        "order-id" : "abcdef",
-        "price" : "21000.0",
-        "original-amount" : "0.21",
-        "asset-pair" : "BTC/USD",
-        "ref" : "",
-        "fee-amount" : "0.090103",
-        "fee-currency" : "USD",
-        "date" : "2021-05-14T13:46:40Z",
-        "timestamp" : 1621000000
+    "closed": {
+      "abcdef-00000-000000": {
+        "id": "abcdef-00000-000000",
+        "type": "BID",
+        "order-id": "abcdef",
+        "price": "21000.0",
+        "original-amount": "0.21",
+        "asset-pair": "BTC/USD",
+        "ref": "",
+        "fee-amount": "0.090103",
+        "fee-currency": "USD",
+        "date": "2021-05-14T13:46:40Z",
+        "timestamp": 1621000000
       }
+    }
+  }
+}
+```
+
+### `snr-placetestorder`
+Place a minimal, greatly undervalued limit order to test if exchange settings are working properly.
+
+```shell
+user@host:~$ lightning-cli snr-placetestorder
+{
+  "result": {
+    "order": {
+      "id": "abcdef-00000-000002",
+      "type": "BID",
+      "asset-pair": "BTC/GBP",
+      "amount": "0.00001000",
+      "price": "2189.67"
     }
   }
 }

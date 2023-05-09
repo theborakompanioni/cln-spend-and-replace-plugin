@@ -118,7 +118,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         execute(plugin, request, response, VersionCommand::new);
     }
 
-
     @RPCMethod(
             name = "snr-exchangeinfo",
             description = "Command to list exchange specific information."
@@ -166,7 +165,6 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
         });
     }
 
-
     @RPCMethod(
             name = "snr-history",
             description = "Get the trade history of your account."
@@ -184,6 +182,20 @@ public final class ClnSpendAndReplacePlugin extends CLightningPlugin {
             TradeHistoryParamsAll tradeHistoryParams = new TradeHistoryParamsAll();
             tradeHistoryParams.setInstrument(instrument);
             return new HistoryCommand(exchange, openOrdersParams, tradeHistoryParams);
+        });
+    }
+
+    @RPCMethod(
+            name = "snr-placetestorder",
+            description = "Place a minimal, greatly undervalued limit order to test if exchange settings are working properly."
+    )
+    public void rpcPlaceTestOrder(ICLightningPlugin plugin, CLightningJsonObject request, CLightningJsonObject response) {
+        log(PluginLog.DEBUG, "rpc 'snr-placetestorder' invoked: " + request.getWrapper());
+
+        execute(plugin, request, response, () -> {
+            initExchangeIfNecessary();
+
+            return new PlaceTestOrderCommand(exchange, Currency.getInstance(defaultFiatCurrency));
         });
     }
 

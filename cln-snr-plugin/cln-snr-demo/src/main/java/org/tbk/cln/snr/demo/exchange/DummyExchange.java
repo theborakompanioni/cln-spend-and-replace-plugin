@@ -30,6 +30,7 @@ import si.mazi.rescu.SynchronizedValueFactory;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class DummyExchange extends BaseExchange implements Exchange {
@@ -97,6 +98,13 @@ public class DummyExchange extends BaseExchange implements Exchange {
     }
 
     public static class DummyTradeService implements TradeService {
+
+        private static final AtomicLong orderIdCounter = new AtomicLong(0);
+
+        public String placeLimitOrder(LimitOrder limitOrder) {
+            return String.valueOf(orderIdCounter.incrementAndGet());
+        }
+
         /**
          * "abcdef-00000-000001" : {
          * "id" : "abcdef-00000-000001",

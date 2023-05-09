@@ -11,11 +11,10 @@ import org.springframework.test.context.ActiveProfiles;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.List;
-import java.util.stream.StreamSupport;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesRegex;
 import static org.tbk.cln.snr.test.OutputHelper.containsObjectWithId;
 import static org.tbk.cln.snr.test.OutputHelper.findObjectWithId;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
@@ -75,7 +74,7 @@ class ClnSpendAndReplacePluginTest {
                     }
                 }
                 """.getBytes(StandardCharsets.UTF_8));
-        }
+    }
 
     @Test
     void testGetManifest() throws IOException {
@@ -116,6 +115,10 @@ class ClnSpendAndReplacePluginTest {
                     "name" : "snr-history",
                     "usage" : "",
                     "description" : "Get the trade history of your account."
+                  }, {
+                    "name" : "snr-placetestorder",
+                    "usage" : "",
+                    "description" : "Place a minimal, greatly undervalued limit order to test if exchange settings are working properly."
                   }, {
                     "name" : "snr-balance",
                     "usage" : "",
@@ -382,6 +385,7 @@ class ClnSpendAndReplacePluginTest {
                   }
                 }"""));
     }
+
     @Test
     void testSnrHistory() throws IOException {
         inWriter.write("""
@@ -433,6 +437,38 @@ class ClnSpendAndReplacePluginTest {
                         "date" : "2021-05-14T13:46:40Z",
                         "timestamp" : 1621000000
                       }
+                    }
+                  }
+                }"""));
+    }
+
+    @Test
+    void testSnrPlaceTestOrder() throws IOException {
+        inWriter.write("""
+                {
+                    "jsonrpc": "2.0",
+                    "id": "snr-placetestorder",
+                    "method": "snr-placetestorder",
+                    "params": []
+                }
+                """.getBytes(StandardCharsets.UTF_8));
+
+        await()
+                .atMost(Duration.ofSeconds(1115))
+                .until(() -> containsObjectWithId(outCaptor, "snr-placetestorder"));
+
+        JsonNode output = findObjectWithId(outCaptor, "snr-placetestorder").orElseThrow();
+
+        JsonNode result = output.get("result");
+        assertThat(result.toPrettyString(), is("""
+                {
+                  "result" : {
+                    "order" : {
+                      "id" : "1",
+                      "type" : "BID",
+                      "asset-pair" : "BTC/USD",
+                      "amount" : "0.00001000",
+                      "price" : "0.02"
                     }
                   }
                 }"""));
