@@ -19,7 +19,6 @@ logging.level.org.springframework.web.servlet.mvc.method.annotation.RequestMappi
 logging.level.web: DEBUG
 
 org.tbk.cln.plugin.spend-and-replace:
-  enabled: true
   dry: true
 
 org.tbk.xchange:

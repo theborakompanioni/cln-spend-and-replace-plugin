@@ -3,7 +3,8 @@ apply plugin: 'org.springframework.boot'
 description = 'cln-spend-and-replace-plugin application package'
 
 dependencies {
-    implementation project(':cln-snr-plugin:cln-snr-starter')
+    implementation project(':cln-snr-plugin:cln-snr-core')
+    implementation project(':cln-snr-plugin:cln-snr-demo')
 
     implementation "io.github.theborakompanioni:spring-xchange-starter:${bitcoinSpringBootStarterVersion}"
 

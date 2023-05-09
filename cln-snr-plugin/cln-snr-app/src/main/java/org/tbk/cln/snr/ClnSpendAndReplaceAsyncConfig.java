@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 
 @EnableAsync
 @Configuration
-public class ClnSpendAndReplaceApplicationAsyncConfig implements AsyncConfigurer {
+public class ClnSpendAndReplaceAsyncConfig implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {

@@ -1,8 +1,6 @@
 rootProject.name = 'cln-spend-and-replace-plugin'
 
 include 'cln-snr-plugin:cln-snr-app'
-include 'cln-snr-plugin:cln-snr-autoconfigure'
 include 'cln-snr-plugin:cln-snr-core'
 include 'cln-snr-plugin:cln-snr-demo'
-include 'cln-snr-plugin:cln-snr-starter'
 

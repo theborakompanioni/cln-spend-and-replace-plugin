@@ -1,4 +1,4 @@
-package org.tbk.cln.snr.config;
+package org.tbk.cln.snr;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,10 +13,7 @@ import java.util.Objects;
 )
 @Getter
 @AllArgsConstructor(onConstructor = @__(@ConstructorBinding))
-public class ClnSpendAndReplacePluginAutoConfigurationProperties {
-
-    private boolean enabled;
-
+public class ClnSpendAndReplaceProperties {
     private Boolean dry;
 
     public boolean getDry() {
