@@ -100,5 +100,3 @@ application-management.port
 .resourceCache/
 tor-working-dir/
 tmp/
-
-!libs/jrpclightning-0.2.4-SNAPSHOT.jar

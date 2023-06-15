@@ -1,6 +1,6 @@
 ext {
     bitcoinSpringBootStarterVersion = '0.9.0'
-    jrpclightningVersion = '0.2.3'
+    jrpclightningVersion = '0.2.4'
     gsonVersion = '2.8.8' // use same as jrpclightning
     acinqBitcoinKmpVersion = '0.11.1'
     acinqSecp256k1KmpVersion = '0.8.0'
