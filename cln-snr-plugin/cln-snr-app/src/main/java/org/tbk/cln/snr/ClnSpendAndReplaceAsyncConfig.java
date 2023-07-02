@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 
 @EnableAsync
 @Configuration
-public class ClnSpendAndReplaceAsyncConfig implements AsyncConfigurer {
+class ClnSpendAndReplaceAsyncConfig implements AsyncConfigurer {
 
     @Override
     public Executor getAsyncExecutor() {
@@ -19,7 +19,7 @@ public class ClnSpendAndReplaceAsyncConfig implements AsyncConfigurer {
     }
 
     @Bean("tbkSpringAsyncTaskExecutor")
-    public ThreadPoolTaskExecutor taskExecutor() {
+    ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setThreadNamePrefix("tbk-async-");
         threadPoolTaskExecutor.setCorePoolSize(1);

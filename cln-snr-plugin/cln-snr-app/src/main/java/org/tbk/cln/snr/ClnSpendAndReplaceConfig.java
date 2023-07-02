@@ -21,7 +21,7 @@ import static java.util.Objects.requireNonNull;
 @Slf4j
 @Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(ClnSpendAndReplaceProperties.class)
-public class ClnSpendAndReplaceConfig {
+class ClnSpendAndReplaceConfig {
 
     private final ClnSpendAndReplaceProperties properties;
 
@@ -30,7 +30,7 @@ public class ClnSpendAndReplaceConfig {
     }
 
     @Bean
-    public RunOptions runOptions(Environment env, ApplicationArguments applicationArguments) {
+    RunOptions runOptions(Environment env, ApplicationArguments applicationArguments) {
         boolean isExplicitTestEnvironment = env.acceptsProfiles(Profiles.of("test | debug | development | staging"));
         boolean isExplicitDryRunGivenByUserViaArguments = applicationArguments.containsOption("dry");
         boolean isExplicitDryRunGivenByUserViaProperties = properties.getDry();
@@ -45,19 +45,19 @@ public class ClnSpendAndReplaceConfig {
     }
 
     @Bean
-    public ApplicationShutdownManager applicationShutdownManager(ApplicationContext applicationContext) {
+    ApplicationShutdownManager applicationShutdownManager(ApplicationContext applicationContext) {
         return new ApplicationShutdownManager(applicationContext);
     }
 
     @Bean
-    public ClnSpendAndReplacePlugin clnSpendAndReplacePlugin(ApplicationShutdownManager applicationShutdownManager,
+    ClnSpendAndReplacePlugin clnSpendAndReplacePlugin(ApplicationShutdownManager applicationShutdownManager,
                                                              Exchange exchange,
                                                              RunOptions dryRunOption) {
         return new ClnSpendAndReplacePlugin(applicationShutdownManager, exchange, dryRunOption);
     }
 
     @Bean
-    public PluginInitializer pluginInitializer(ClnSpendAndReplacePlugin plugin) {
+    PluginInitializer pluginInitializer(ClnSpendAndReplacePlugin plugin) {
         return new PluginInitializer(plugin);
     }
 

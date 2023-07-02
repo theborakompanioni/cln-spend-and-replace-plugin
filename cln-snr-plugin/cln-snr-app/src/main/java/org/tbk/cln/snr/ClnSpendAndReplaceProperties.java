@@ -19,5 +19,4 @@ public class ClnSpendAndReplaceProperties {
     public boolean getDry() {
         return Objects.requireNonNullElse(dry, false);
     }
-
 }

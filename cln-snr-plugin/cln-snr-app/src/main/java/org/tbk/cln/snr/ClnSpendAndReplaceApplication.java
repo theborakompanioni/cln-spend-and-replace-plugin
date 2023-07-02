@@ -9,7 +9,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import java.util.TimeZone;
 
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 public class ClnSpendAndReplaceApplication {
     static {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
