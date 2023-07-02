@@ -6,6 +6,7 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 
+import java.util.Locale;
 import java.util.TimeZone;
 
 @Slf4j
@@ -13,6 +14,7 @@ import java.util.TimeZone;
 public class ClnSpendAndReplaceApplication {
     static {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        Locale.setDefault(Locale.ENGLISH);
     }
 
     public static void main(String[] args) {
