@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changes
 - upgrade: update spring-boot from v3.1.0 to v3.1.1
+- upgrade: update bitcoin-spring-boot-starter from v0.9.0 to v0.10.0
 
 ## [0.0.1] - 2023-04-23
 ### Added
