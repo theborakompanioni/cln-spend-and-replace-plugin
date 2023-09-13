@@ -1,4 +1,4 @@
-FROM polarlightning/clightning:23.02.2
+FROM polarlightning/clightning:23.08
 
 RUN apt-get update -y \
   && apt-get install -y openjdk-17-jre \

@@ -1,30 +1,50 @@
-version: "3.8"
+
+version: "3"
 
 services:
+  postgres:
+    restart: always
+    container_name: regtest_db
+    image: postgres:14.5-alpine
+    volumes:
+      - postgres-data:/postgresql_data
+      - ./data/pg/init:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_ADDITIONAL_DATABASES: regtest_cln0_app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /postgresql_data
+    ports:
+      - "5889:5432"
+
   bitcoind_regtest:
     container_name: bitcoind_regtest
-    image: ruimarinho/bitcoin-core:24-alpine
+    image: polarlightning/bitcoind:25.0
     restart: always
+    volumes:
+      - bitcoind-data:/home/bitcoin/.bitcoin/regtest
     command:
       -regtest=1
       -server=1
       -whitelist=0.0.0.0/0
       -txindex=1
-      -debug=mempool
+      -debug=rpc
       -dns=0
       -dnsseed=0
       -networkactive=0
       -uacomment=tbkdevbitcoindregtest
       -printpriority=1
       -logtimemicros=1
-      -rpcuser=regtest-rpc-user
-      -rpcpassword=regtest-rpc-pass
+      -rpcauth=regtest:169f6ba28badca1d912ac0defebc8ceb$$2550c68dfde8ca3b4892415fa8779b6ea656a44e7af1642332afa06c1979e014
+      -rpcauth=app:f821d634f8b4c2fa2c63fb88a184960e$$225d98d20183093c377a6090c86b9a740380067d092a203831d5ce3ba168cc6c
       -rpcbind=0.0.0.0
       -rpcallowip=0.0.0.0/0
       -zmqpubrawblock=tcp://0.0.0.0:28332
       -zmqpubrawtx=tcp://0.0.0.0:28333
       -zmqpubhashblock=tcp://0.0.0.0:28334
       -zmqpubhashtx=tcp://0.0.0.0:28335
+      -fallbackfee=0.00000253
     expose:
       - "18443"
       - "28332"
@@ -38,16 +58,48 @@ services:
       - "28334:28334"
       - "28335:28335"
 
-  lightning:
-    image: elementsproject/lightningd:v22.11.1
-    command:
-      - --bitcoin-rpcconnect=bitcoind_regtest
-      - --bitcoin-rpcuser=regtest-rpc-user
-      - --bitcoin-rpcpassword=regtest-rpc-pass
-      - --network=regtest
-      - --log-level=debug
-      - --grpc-port=8001
+  cln0_app:
+    container_name: regtest_cln0_app
+    image: polarlightning/clightning:23.08
+    restart: always
     depends_on:
-      - bitcoind_regtest
+      bitcoind_regtest:
+        condition: service_started # service_healthy
+      postgres:
+        condition: service_started # service_healthy
+      cln1_alice:
+        condition: service_started # service_healthy
+      cln2_bob:
+        condition: service_started # service_healthy
+      cln3_charlie:
+        condition: service_started # service_healthy
+      cln4_dave:
+        condition: service_started # service_healthy
+      cln5_erin:
+        condition: service_started # service_healthy
+    environment:
+      LIGHTNINGD_POSTGRES_NO_VACUUM: 1
+    command:
+      - '--alias=cln0_app'
+      - '--wallet=postgres://regtest_cln0_app:regtest_cln0_app@regtest_db:5432/regtest_cln0_app'
+      - '--bitcoin-rpcconnect=bitcoind_regtest'
+      - '--bitcoin-rpcport=18443'
+      - '--bitcoin-rpcuser=app'
+      - '--bitcoin-rpcpassword=app'
+      - '--grpc-port=19935'
+      - '--network=regtest'
+      - '--log-level=debug'
+      - '--funding-confirms=1'
+      - '--dev-fast-gossip'
+      - '--dev-bitcoind-poll=1'
+    volumes:
+      # mount all certs/keys individually (to avoid creating files on the host system by the container)
+      - ./data/cln0_app/regtest/hsm_secret:/home/clightning/.lightning/regtest/hsm_secret:ro
+      - ./data/cln0_app/regtest/ca.pem:/home/clightning/.lightning/regtest/ca.pem
+      - ./data/cln0_app/regtest/ca-key.pem:/home/clightning/.lightning/regtest/ca-key.pem
+      - ./data/cln0_app/regtest/client.pem:/home/clightning/.lightning/regtest/client.pem
+      - ./data/cln0_app/regtest/client-key.pem:/home/clightning/.lightning/regtest/client-key.pem
+      - ./data/cln0_app/regtest/server.pem:/home/clightning/.lightning/regtest/server.pem
+      - ./data/cln0_app/regtest/server-key.pem:/home/clightning/.lightning/regtest/server-key.pem
     ports:
-      - "8001:8001"
+      - "19935:19935"
