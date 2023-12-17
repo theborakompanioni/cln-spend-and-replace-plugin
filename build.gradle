@@ -1,3 +1,6 @@
+import com.github.spotbugs.snom.Confidence
+import com.github.spotbugs.snom.Effort
+import com.github.spotbugs.snom.SpotBugsTask
 import io.franzbecker.gradle.lombok.task.DelombokTask
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.api.tasks.testing.logging.TestLogEvent
@@ -15,10 +18,10 @@ buildscript {
 
 plugins {
     id 'idea'
-    id 'nebula.release' version '17.1.0'
-    id 'nebula.lint' version '17.7.1'
-    id 'com.netflix.nebula.project' version '10.0.1'
-    id 'com.github.spotbugs' version '5.0.13' apply false
+    id 'nebula.release' version '17.2.2'
+    id 'nebula.lint' version '18.1.0'
+    id 'com.netflix.nebula.project' version '10.1.5'
+    id 'com.github.spotbugs' version '5.2.1' apply false
     id 'org.springframework.boot' version "$springBootGradlePluginVersion" apply false
     id 'io.franzbecker.gradle-lombok' version '5.0.0' apply false
 }
@@ -84,7 +87,7 @@ subprojects {
     apply plugin: 'checkstyle'
     apply plugin: 'com.github.spotbugs'
     apply plugin: 'com.netflix.nebula.project'
-    apply plugin: 'nebula.info'
+    apply plugin: 'com.netflix.nebula.info'
     apply plugin: 'com.netflix.nebula.integtest-standalone'
     apply plugin: 'io.franzbecker.gradle-lombok'
     apply plugin: 'io.spring.dependency-management'
@@ -141,7 +144,7 @@ subprojects {
         includeEmptyDirs false
     }
 
-    sourceJar {
+    /*sourceJar {
         // needed till duplicate bug in protobuf gradle plugin is resolved.
         // see https://github.com/google/protobuf-gradle-plugin/issues/522 (last checked 2023-01-18)
         duplicatesStrategy DuplicatesStrategy.EXCLUDE
@@ -150,7 +153,7 @@ subprojects {
     task sourcesJar(type: Jar) {
         archiveClassifier.set('sources')
         from sourceSets.main.java
-    }
+    }*/
 
     task testJar(type: Jar) {
         archiveClassifier.set('test')
@@ -276,13 +279,13 @@ subprojects {
     }
 
     spotbugs {
-        effort = 'max'
-        reportLevel = 'medium' // TODO: set to 'low' to also find 'low confidence issues'
+        effort = Effort.MAX
+        reportLevel = Confidence.MEDIUM
         ignoreFailures = false
         excludeFilter = rootProject.file('./spotbugs-exclude.xml')
         reportsDir = rootProject.file("$rootProject.buildDir/reports/spotbugs/$project.name")
     }
-    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    tasks.withType(SpotBugsTask) {
         onlyIf { gradle.taskGraph.hasTask('build') }
         reports {
             html.required = true
