@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changes
-- upgrade: update bitcoin-kmp from v0.11.1 to v0.12.0
+- upgrade: update bitcoin-kmp from v0.11.1 to v0.15.0
+- upgrade: update lightning-kmp from v1.4.4 to v1.5.14
 - upgrade: update spring-boot from v3.1.0 to v3.1.1
 - upgrade: update bitcoin-spring-boot-starter from v0.9.0 to v0.10.0
 

@@ -2,9 +2,9 @@ ext {
     bitcoinSpringBootStarterVersion = '0.10.0'
     jrpclightningVersion = '0.2.4'
     gsonVersion = '2.8.8' // use same as jrpclightning
-    acinqBitcoinKmpVersion = '0.12.0'
-    acinqSecp256k1KmpVersion = '0.10.0'
-    acinqLightningKmpVersion = '1.4.4'
+    acinqSecp256k1KmpVersion = '0.12.0'
+    acinqBitcoinKmpVersion = '0.15.0' // keep in sync with `acinqSecp256k1KmpVersion`
+    acinqLightningKmpVersion = '1.5.14' // keep in sync with `acinqBitcoinKmpVersion`
     xChangeVersion = '5.1.0'
     guavaVersion = '30.1-jre'
     lombokVersion = '1.18.30'
