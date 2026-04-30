@@ -6,6 +6,9 @@ dependencies {
     implementation project(':cln-snr-plugin:cln-snr-core')
     implementation project(':cln-snr-plugin:cln-snr-demo')
 
+    // override needed for jrpclightning
+    implementation "com.google.code.gson:gson:${gsonVersion}"
+
     implementation "io.github.theborakompanioni:spring-xchange-starter:${bitcoinSpringBootStarterVersion}"
 
     implementation 'org.springframework.boot:spring-boot-starter'

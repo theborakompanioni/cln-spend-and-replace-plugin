@@ -151,7 +151,7 @@ public class DummyExchange extends BaseExchange implements Exchange {
          */
         @Override
         public UserTrades getTradeHistory(TradeHistoryParams params) {
-            return new UserTrades(List.of(new UserTrade.Builder()
+            return new UserTrades(List.of(UserTrade.builder()
                     .id("abcdef-00000-000000")
                     .type(Order.OrderType.BID)
                     .orderId("abcdef")
